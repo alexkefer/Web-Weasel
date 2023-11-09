@@ -35,27 +35,50 @@ func main() {
 			fmt.Println("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			fmt.Println("connecting to:", seedAddr)
-			conn, connErr := net.Dial("tcp", seedAddr.String())
-
-			if connErr != nil {
-				fmt.Println("error connecting to seed address:", connErr)
-				return
-			} else {
-				_, err := fmt.Fprintf(conn, "%d\n%s\n", JoinRequest, myAddr.String())
-
-				if err != nil {
-					fmt.Println("error sending join request:", err)
-					return
-				}
-
-				addrChan <- seedAddr
-			}
+			SendAddMeRequest(addrChan, myAddr, seedAddr)
 		}
-
 	}
 
 	for {
+	}
+}
+
+func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr) {
+	fmt.Println("connecting to:", to)
+	conn, connErr := net.Dial("tcp", to.String())
+
+	if connErr != nil {
+		fmt.Println("error connecting to seed address:", connErr)
+		return
+	} else {
+		err := SendMessage(conn, Message{Code: AddMeRequest, SenderAddr: from.String()})
+
+		if err != nil {
+			fmt.Println("error sending join request:", err)
+			return
+		}
+
+		message, messageErr := ReceiveMessage(conn)
+
+		if messageErr != nil {
+			fmt.Println("error receiving add me response:", err)
+			return
+		}
+
+		if message.Code != AddMeResponse {
+			fmt.Println("unexpected message code:", message.Code)
+			return
+		}
+
+		messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
+
+		if addrParseErr != nil {
+			fmt.Println("addr parse error:", addrParseErr)
+			return
+		}
+
+		addrChan <- messageAddr
+
 	}
 }
 
@@ -63,6 +86,6 @@ func main() {
 const (
 	PingRequest = iota
 	PingResponse
-	JoinRequest
-	JoinResponse
+	AddMeRequest
+	AddMeResponse
 )

@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
-	"strconv"
-	"strings"
 )
 
 func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr) {
@@ -24,44 +21,26 @@ func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr) {
 			fmt.Println("tcp connection error:", connErr)
 		} else {
 			// Here we create a separate goroutine (thread) to handle this connection
-			go HandleConnection(conn, addressChan)
+			go HandleConnection(myAddr, conn, addressChan)
 		}
 	}
 }
 
-func HandleConnection(conn net.Conn, addressChan chan<- net.Addr) {
+func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Addr) {
 	fmt.Println("connection received from:", conn.RemoteAddr())
-	reader := bufio.NewReader(conn)
-	codeStr, readErr := reader.ReadString('\n')
+	message, messageErr := ReceiveMessage(conn)
 
-	if readErr != nil {
-		fmt.Println("request parse error:", readErr)
-		CloseConnection(conn)
+	if messageErr != nil {
+		fmt.Println("message receive error:", messageErr)
 		return
 	}
 
-	code, codeParseErr := strconv.Atoi(strings.TrimSpace(codeStr))
+	fmt.Printf("code: %d\n", message.Code)
 
-	if codeParseErr != nil {
-		fmt.Println("request code parse error:", codeParseErr)
-		CloseConnection(conn)
-		return
-	}
+	switch message.Code {
+	case AddMeRequest:
 
-	fmt.Printf("code: %d\n", code)
-
-	switch code {
-	case JoinRequest:
-
-		addrStr, readErr := reader.ReadString('\n')
-
-		if readErr != nil {
-			fmt.Println("request parse error:", readErr)
-			CloseConnection(conn)
-			return
-		}
-
-		addrStr = strings.TrimSpace(addrStr)
+		addrStr := message.SenderAddr
 		fmt.Println("addr str:", addrStr)
 
 		addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
@@ -71,9 +50,19 @@ func HandleConnection(conn net.Conn, addressChan chan<- net.Addr) {
 			return
 		}
 
+		// Maybe ping addr here to make sure the address is legit
+
 		addressChan <- addr
+
+		messageErr := SendMessage(conn, Message{Code: AddMeResponse, SenderAddr: myAddr.String()})
+
+		if messageErr != nil {
+			fmt.Println("send AddMeResponse error:", messageErr)
+			return
+		}
+
 	default:
-		fmt.Printf("invalid code %d, closing connection.\n", code)
+		fmt.Printf("invalid code %d, closing connection.\n", message.Code)
 
 	}
 
