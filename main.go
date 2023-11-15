@@ -13,9 +13,9 @@ func main() {
 		fmt.Println("error: either 0 or 1 arguments expected")
 		return
 	}
-	port, err := findOpenPort(8080, 8100)
-	if err != nil {
-		fmt.Println("error finding open port:", err)
+	port, portErr := findOpenPort(8080, 8100)
+	if portErr != nil {
+		fmt.Println("error finding open port:", portErr)
 		return
 	}
 	address := GetLocalIPAddress() + port
@@ -25,13 +25,14 @@ func main() {
 		fmt.Println("error parsing my ip arg:", myAddrParseErr)
 		return
 	}
-
+	addresses := make(map[net.Addr]int)
 	addrChan := make(chan net.Addr)
-	go RequestHandler(myAddr, addrChan)
-	go StoreAddresses(addrChan)
-	addrChan <- myAddr
+	go RequestHandler(myAddr, addrChan, addresses)
+	go StoreAddresses(addresses, addrChan)
+	fmt.Println("my address:", myAddr)
+	//addrChan <- myAddr
 
-	// If a second address is given, try to join its network
+	// If an address is given, try to join its network
 	if len(os.Args) > 1 {
 		seedAddrArg := os.Args[1]
 
@@ -41,16 +42,15 @@ func main() {
 			fmt.Println("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			SendAddMeRequest(addrChan, myAddr, seedAddr)
+			SendAddMeRequest(addrChan, myAddr, seedAddr, addresses)
 		}
 	}
 
-	for {
-	}
+	// Runtime loop
+	select {}
 }
 
-// This function returns the local IP address of the machine
-// It is used to determine the address of the machine running the program so that other machines can connect to it
+// GetLocalIPAddress /* This function returns the local IP address of the machine
 func GetLocalIPAddress() string {
 	connection, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
@@ -76,42 +76,78 @@ func findOpenPort(startPort, endPort int) (string, error) {
 	return "", fmt.Errorf("unable to find open port")
 }
 
-func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr) {
+// This function sends the AddMeRequest message to the seed address
+func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addresses map[net.Addr]int) {
+	// Connect to the seed address
 	fmt.Println("connecting to:", to)
 	conn, connErr := net.Dial("tcp", to.String())
 
 	if connErr != nil {
 		fmt.Println("error connecting to seed address:", connErr)
 		return
-	} else {
-		err := SendMessage(conn, Message{Code: AddMeRequest, SenderAddr: from.String()})
+	}
+	stringAddrs := NetAddrMapToStringMap(addresses)
+	var message = Message{Code: AddMeRequest, SenderAddr: from.String(), ConnectedParties: stringAddrs}
+	err := SendMessage(conn, message)
 
-		if err != nil {
-			fmt.Println("error sending join request:", err)
-			return
+	if err != nil {
+		fmt.Println("error sending join request:", err)
+		return
+	}
+
+	message, messageErr := ReceiveMessage(conn)
+
+	if messageErr != nil {
+		fmt.Println("error receiving add me response:", err)
+		return
+	}
+
+	if message.Code != AddMeResponse {
+		fmt.Println("unexpected message code:", message.Code)
+		return
+	}
+
+	messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
+	fmt.Println("message addr:", messageAddr)
+
+	if addrParseErr != nil {
+		fmt.Println("addr parse error:", addrParseErr)
+		return
+	}
+
+	connectedParties := StringMapToNetAddrMap(message.ConnectedParties)
+	fmt.Printf("Connected Parties %v\n", message.ConnectedParties)
+
+	for eachAddr, _ := range connectedParties {
+		fmt.Println("sending add me request to:", eachAddr)
+		addrChan <- eachAddr
+	}
+
+	addrChan <- messageAddr
+
+	ShareAddress(from, connectedParties)
+}
+
+// ShareAddress /* This function sends the given address to all addresses in the given map
+func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
+	for addr, _ := range addresses {
+		if addr.String() != address.String() {
+			fmt.Println("sending address to:", addr)
+			conn, connErr := net.Dial("tcp", addr.String())
+
+			if connErr != nil {
+				fmt.Println("error connecting to address:", connErr)
+				return
+			}
+
+			err := SendMessage(conn, Message{Code: ShareAddressRequest, SenderAddr: address.String(), ConnectedParties: NetAddrMapToStringMap(addresses)})
+
+			if err != nil {
+				fmt.Println("error sending address:", err)
+				return
+			}
+
 		}
-
-		message, messageErr := ReceiveMessage(conn)
-
-		if messageErr != nil {
-			fmt.Println("error receiving add me response:", err)
-			return
-		}
-
-		if message.Code != AddMeResponse {
-			fmt.Println("unexpected message code:", message.Code)
-			return
-		}
-
-		messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
-
-		if addrParseErr != nil {
-			fmt.Println("addr parse error:", addrParseErr)
-			return
-		}
-
-		addrChan <- messageAddr
-
 	}
 }
 
@@ -121,4 +157,5 @@ const (
 	PingResponse
 	AddMeRequest
 	AddMeResponse
+	ShareAddressRequest
 )
