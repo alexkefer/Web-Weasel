@@ -9,6 +9,7 @@ type Message struct {
 	Code             int
 	SenderAddr       string
 	ConnectedParties map[string]int
+	msg              string
 }
 
 func ReceiveMessage(conn net.Conn) (Message, error) {

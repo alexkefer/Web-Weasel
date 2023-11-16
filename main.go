@@ -25,10 +25,11 @@ func main() {
 		fmt.Println("error parsing my ip arg:", myAddrParseErr)
 		return
 	}
+	finishedStore := make(chan bool)
 	addresses := make(map[net.Addr]int)
 	addrChan := make(chan net.Addr)
-	go RequestHandler(myAddr, addrChan, addresses)
-	go StoreAddresses(addresses, addrChan)
+	go RequestHandler(myAddr, addrChan, addresses, finishedStore)
+	go StoreAddresses(addresses, addrChan, finishedStore)
 	fmt.Println("my address:", myAddr)
 	//addrChan <- myAddr
 
@@ -42,12 +43,12 @@ func main() {
 			fmt.Println("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			SendAddMeRequest(addrChan, myAddr, seedAddr, addresses)
+			SendAddMeRequest(myAddr, seedAddr, addresses)
 		}
 	}
 
-	// Runtime loop
-	select {}
+	for {
+	}
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine
@@ -77,7 +78,7 @@ func findOpenPort(startPort, endPort int) (string, error) {
 }
 
 // This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addresses map[net.Addr]int) {
+func SendAddMeRequest(from net.Addr, to net.Addr, addresses map[net.Addr]int) {
 	// Connect to the seed address
 	fmt.Println("connecting to:", to)
 	conn, connErr := net.Dial("tcp", to.String())
@@ -94,45 +95,12 @@ func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addr
 		fmt.Println("error sending join request:", err)
 		return
 	}
-
-	message, messageErr := ReceiveMessage(conn)
-
-	if messageErr != nil {
-		fmt.Println("error receiving add me response:", err)
-		return
-	}
-
-	if message.Code != AddMeResponse {
-		fmt.Println("unexpected message code:", message.Code)
-		return
-	}
-
-	messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
-	fmt.Println("message addr:", messageAddr)
-
-	if addrParseErr != nil {
-		fmt.Println("addr parse error:", addrParseErr)
-		return
-	}
-
-	connectedParties := StringMapToNetAddrMap(message.ConnectedParties)
-	fmt.Printf("Connected Parties %v\n", message.ConnectedParties)
-
-	for eachAddr, _ := range connectedParties {
-		fmt.Println("sending add me request to:", eachAddr)
-		addrChan <- eachAddr
-	}
-
-	addrChan <- messageAddr
-
-	ShareAddress(from, connectedParties)
 }
 
 // ShareAddress /* This function sends the given address to all addresses in the given map
 func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 	for addr, _ := range addresses {
 		if addr.String() != address.String() {
-			fmt.Println("sending address to:", addr)
 			conn, connErr := net.Dial("tcp", addr.String())
 
 			if connErr != nil {
@@ -149,6 +117,36 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 
 		}
 	}
+}
+
+// BroadcastMessage /* This function sends the given message to all addresses in the given map
+func BroadcastMessage(message Message, addresses map[net.Addr]int) {
+	for addr, _ := range addresses {
+		conn, connErr := net.Dial("tcp", addr.String())
+
+		if connErr != nil {
+			fmt.Println("error connecting to address:", connErr)
+			return
+		}
+
+		err := SendMessage(conn, message)
+
+		if err != nil {
+			fmt.Println("error sending message:", err)
+			return
+		}
+	}
+}
+
+// printConnectionData /* This function prints the given connection data
+func printConnectionData(connectedParties map[net.Addr]int, myAddr net.Addr) {
+	fmt.Println("My Address:", myAddr)
+	fmt.Println("Connected Parties: ")
+	for addr, _ := range connectedParties {
+		fmt.Printf("%s, ", addr)
+	}
+	fmt.Println()
+
 }
 
 // This is basically the go equivalent of an enum (a bunch of related constants)

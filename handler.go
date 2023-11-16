@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParties map[net.Addr]int) {
+func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParties map[net.Addr]int, storeComplete <-chan bool) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
@@ -15,6 +15,7 @@ func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParti
 
 	// This is an infinite loop in go
 	for {
+		fmt.Println("listening for connections")
 		conn, connErr := listener.Accept()
 
 		if connErr != nil {
@@ -23,6 +24,9 @@ func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParti
 			// Here we create a separate goroutine (thread) to handle this connection
 			go HandleConnection(myAddr, conn, addressChan, connectedParties)
 		}
+		<-storeComplete
+		printConnectionData(connectedParties, myAddr)
+		PromptUser()
 	}
 }
 
@@ -40,20 +44,15 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Add
 	case AddMeRequest:
 
 		newConnections := StringMapToNetAddrMap(message.ConnectedParties)
-		fmt.Printf("Connected Parties %v\n", message.ConnectedParties)
 
-		addrStr := message.SenderAddr
-		fmt.Println("addr str:", addrStr)
-
-		addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
+		addr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
 
 		if addrParseErr != nil {
 			fmt.Println("addr parse error:", addrParseErr)
 			return
 		}
-		fmt.Println("Connection from ", addr)
+		fmt.Println("Connection received from ", addr)
 
-		// Maybe ping addr here to make sure the address is legit
 		messageErr := SendMessage(conn, Message{Code: AddMeResponse, SenderAddr: myAddr.String(), ConnectedParties: NetAddrMapToStringMap(connectedParties)})
 
 		if messageErr != nil {
@@ -63,18 +62,32 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Add
 
 		for eachAddr, _ := range newConnections {
 			if eachAddr.String() != myAddr.String() {
-				fmt.Println("sending add me request to:", eachAddr)
 				addressChan <- eachAddr
 			}
 		}
 
 		addressChan <- addr
+	case AddMeResponse:
+
+		messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
+
+		if addrParseErr != nil {
+			fmt.Println("addr parse error:", addrParseErr)
+			return
+		}
+
+		addrConnectedParties := StringMapToNetAddrMap(message.ConnectedParties)
+
+		for eachAddr, _ := range addrConnectedParties {
+			addressChan <- eachAddr
+		}
+
+		addressChan <- messageAddr
+
+		ShareAddress(messageAddr, connectedParties)
 	case ShareAddressRequest:
 		// Check if the address is already in the connected parties map and add it if it isn't
-		addrStr := message.SenderAddr
-		fmt.Println("addr str:", addrStr)
-
-		addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
+		addr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
 
 		if addrParseErr != nil {
 			fmt.Println("addr parse error:", addrParseErr)
@@ -89,16 +102,22 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Add
 			fmt.Printf("Entire Network: %v\n", connectedParties)
 		}
 
+		addrConnParties := StringMapToNetAddrMap(message.ConnectedParties)
+		for eachAddr, _ := range addrConnParties {
+			if eachAddr.String() != myAddr.String() {
+				fmt.Println("saving address:", eachAddr)
+				addressChan <- eachAddr
+			}
+		}
+
 		if messageErr != nil {
 			fmt.Println("send ShareAddressResponse error:", messageErr)
 			return
 		}
-
 	default:
 		fmt.Printf("invalid code %d, closing connection.\n", message.Code)
 
 	}
-
 	CloseConnection(conn)
 }
 
