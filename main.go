@@ -47,7 +47,9 @@ func main() {
 	}
 
 	// Runtime loop
-	select {}
+	go ParseCommands(addrChan, myAddr, addresses)
+	for {
+	}
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine
@@ -108,7 +110,6 @@ func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addr
 	}
 
 	messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
-	fmt.Println("message addr:", messageAddr)
 
 	if addrParseErr != nil {
 		fmt.Println("addr parse error:", addrParseErr)
@@ -116,10 +117,8 @@ func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addr
 	}
 
 	connectedParties := StringMapToNetAddrMap(message.ConnectedParties)
-	fmt.Printf("Connected Parties %v\n", message.ConnectedParties)
 
 	for eachAddr, _ := range connectedParties {
-		fmt.Println("sending add me request to:", eachAddr)
 		addrChan <- eachAddr
 	}
 
@@ -132,7 +131,6 @@ func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addr
 func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 	for addr, _ := range addresses {
 		if addr.String() != address.String() {
-			fmt.Println("sending address to:", addr)
 			conn, connErr := net.Dial("tcp", addr.String())
 
 			if connErr != nil {
