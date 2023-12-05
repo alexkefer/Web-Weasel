@@ -15,8 +15,10 @@ Commands:
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 )
 
 const (
@@ -29,22 +31,36 @@ const (
 
 // ParseCommands -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
 func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedParties map[net.Addr]int) {
+
+	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		// Read a command from the user
-		var command string
 		fmt.Print(">> ")
-		fmt.Scanln(&command)
+		if !scanner.Scan() {
+			break
+		}
+		command := scanner.Text()
 
 		switch command {
 		case "list":
 			ListConnections(connectedParties)
 		case "broadcast":
-			var message string
-			fmt.Scanln(&message)
-			fmt.Println("WIP")
+			fmt.Print("[enter message]: ")
+			if !scanner.Scan() {
+				break
+			}
+			message := scanner.Text()
+
+			for toAddr, _ := range connectedParties {
+				SendBroadcastMessage(toAddr, myAddr, message)
+			}
+
 		case "msg":
-			var addressStr string
-			fmt.Scanln(&addressStr)
+			fmt.Print("[enter target address]: ")
+			if !scanner.Scan() {
+				break
+			}
+			addressStr := scanner.Text()
 
 			toAddr, addrParseErr := net.ResolveTCPAddr("tcp", addressStr)
 			if addrParseErr != nil {
@@ -52,8 +68,11 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 				continue
 			}
 
-			var message string
-			fmt.Scanln(&message)
+			fmt.Print("[enter message]: ")
+			if !scanner.Scan() {
+				break
+			}
+			message := scanner.Text()
 
 			SendBroadcastMessage(toAddr, myAddr, message)
 
@@ -62,7 +81,7 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 		case "help":
 			Help()
 		default:
-			fmt.Println("Invalid command")
+			fmt.Println("invalid command")
 		}
 	}
 }
