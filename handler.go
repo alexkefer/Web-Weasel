@@ -81,6 +81,9 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Add
 			return
 		}
 
+	case BroadcastMessage:
+		fmt.Printf("received broadcast message from %s: %s\n", message.SenderAddr, message.BroadcastMessage)
+
 	default:
 		fmt.Printf("invalid code %d, closing connection.\n", message.Code)
 

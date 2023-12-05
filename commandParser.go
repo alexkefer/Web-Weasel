@@ -43,11 +43,20 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 			fmt.Scanln(&message)
 			fmt.Println("WIP")
 		case "msg":
-			var address string
-			fmt.Scanln(&address)
+			var addressStr string
+			fmt.Scanln(&addressStr)
+
+			toAddr, addrParseErr := net.ResolveTCPAddr("tcp", addressStr)
+			if addrParseErr != nil {
+				fmt.Println("address parse error:", addrParseErr)
+				continue
+			}
+
 			var message string
 			fmt.Scanln(&message)
-			fmt.Println("WIP")
+
+			SendBroadcastMessage(toAddr, myAddr, message)
+
 		case "exit":
 			fmt.Println("WIP")
 		case "help":

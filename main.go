@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
 // This is the main function of the program
@@ -82,12 +83,12 @@ func findOpenPort(startPort, endPort int) (string, error) {
 func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addresses map[net.Addr]int) {
 	// Connect to the seed address
 	fmt.Println("connecting to:", to)
-	conn, connErr := net.Dial("tcp", to.String())
+	conn, connErr := MakeTcpConnection(to)
 
 	if connErr != nil {
-		fmt.Println("error connecting to seed address:", connErr)
 		return
 	}
+
 	stringAddrs := NetAddrMapToStringMap(addresses)
 	var message = Message{Code: AddMeRequest, SenderAddr: from.String(), ConnectedParties: stringAddrs}
 	err := SendMessage(conn, message)
@@ -149,6 +150,51 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 	}
 }
 
+func MakeTcpConnection(to net.Addr) (net.Conn, error) {
+	duration, parseErr := time.ParseDuration("5s")
+
+	if parseErr != nil {
+		fmt.Println("duration parse error:", parseErr)
+		return nil, parseErr
+	}
+
+	conn, connErr := net.DialTimeout("tcp", to.String(), duration)
+
+	if connErr != nil {
+		fmt.Println("error connecting to address:", connErr)
+		return nil, connErr
+	}
+
+	return conn, nil
+}
+
+func SendBroadcastMessage(to net.Addr, from net.Addr, messageText string) {
+
+	conn, connErr := MakeTcpConnection(to)
+
+	if connErr != nil {
+		return
+	}
+
+	var message = Message{
+		Code:             BroadcastMessage,
+		SenderAddr:       from.String(),
+		BroadcastMessage: messageText,
+	}
+
+	err := SendMessage(conn, message)
+
+	if err != nil {
+		fmt.Println("error sending broadcast message:", err)
+	}
+
+	closeErr := conn.Close()
+
+	if closeErr != nil {
+		fmt.Println("error closing connection:", closeErr)
+	}
+}
+
 // This is basically the go equivalent of an enum (a bunch of related constants)
 const (
 	PingRequest = iota
@@ -156,4 +202,5 @@ const (
 	AddMeRequest
 	AddMeResponse
 	ShareAddressRequest
+	BroadcastMessage
 )
