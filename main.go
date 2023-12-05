@@ -26,10 +26,12 @@ func main() {
 		fmt.Println("error parsing my ip arg:", myAddrParseErr)
 		return
 	}
-	addresses := make(map[net.Addr]int)
-	addrChan := make(chan net.Addr)
-	go RequestHandler(myAddr, addrChan, addresses)
-	go StoreAddresses(addresses, addrChan)
+
+	peerMap := PeerMap{peers: make(map[string]Peer)}
+	myPeer := Peer{addr: myAddr}
+	peerMap.AddPeer(myPeer)
+
+	go RequestHandler(myAddr, &peerMap)
 	fmt.Println("my address:", myAddr)
 	//addrChan <- myAddr
 
@@ -43,12 +45,13 @@ func main() {
 			fmt.Println("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			SendAddMeRequest(addrChan, myAddr, seedAddr, addresses)
+			SendAddMeRequest(myAddr, seedAddr, &peerMap)
+			SendMoreAddMeRequests(myAddr, seedAddr, &peerMap)
 		}
 	}
 
 	// Runtime loop
-	go ParseCommands(addrChan, myAddr, addresses)
+	go ParseCommands(myAddr, &peerMap)
 	for {
 	}
 }
@@ -79,53 +82,56 @@ func findOpenPort(startPort, endPort int) (string, error) {
 	return "", fmt.Errorf("unable to find open port")
 }
 
-// This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(addrChan chan<- net.Addr, from net.Addr, to net.Addr, addresses map[net.Addr]int) {
+// SendAddMeRequest This function sends the AddMeRequest message to the seed address
+func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
 	// Connect to the seed address
 	fmt.Println("connecting to:", to)
 	conn, connErr := MakeTcpConnection(to)
-
 	if connErr != nil {
 		return
 	}
 
-	stringAddrs := NetAddrMapToStringMap(addresses)
-	var message = Message{Code: AddMeRequest, SenderAddr: from.String(), ConnectedParties: stringAddrs}
+	message := Message{Code: AddMeRequest, SenderAddr: from.String()}
 	err := SendMessage(conn, message)
-
 	if err != nil {
-		fmt.Println("error sending join request:", err)
 		return
 	}
 
-	message, messageErr := ReceiveMessage(conn)
+	err = conn.Close()
+	peerMap.AddPeer(Peer{addr: to})
+}
 
-	if messageErr != nil {
-		fmt.Println("error receiving add me response:", err)
+func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
+	conn, connErr := MakeTcpConnection(toPeersOf)
+	if connErr != nil {
 		return
 	}
 
-	if message.Code != AddMeResponse {
-		fmt.Println("unexpected message code:", message.Code)
+	message := Message{Code: SharePeersRequest, SenderAddr: from.String()}
+	err := SendMessage(conn, message)
+	if err != nil {
 		return
 	}
 
-	messageAddr, addrParseErr := net.ResolveTCPAddr("tcp", message.SenderAddr)
+	resp, respErr := ReceiveMessage(conn)
 
-	if addrParseErr != nil {
-		fmt.Println("addr parse error:", addrParseErr)
+	if respErr != nil {
 		return
 	}
 
-	connectedParties := StringMapToNetAddrMap(message.ConnectedParties)
+	for _, addrStr := range resp.Peers {
+		if !peerMap.HasPeer(addrStr) {
 
-	for eachAddr, _ := range connectedParties {
-		addrChan <- eachAddr
+			addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
+
+			if addrParseErr != nil {
+				fmt.Println("addr parse error:", addrParseErr)
+				continue
+			}
+
+			SendAddMeRequest(from, addr, peerMap)
+		}
 	}
-
-	addrChan <- messageAddr
-
-	ShareAddress(from, connectedParties)
 }
 
 // ShareAddress /* This function sends the given address to all addresses in the given map
@@ -139,13 +145,12 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 				return
 			}
 
-			err := SendMessage(conn, Message{Code: ShareAddressRequest, SenderAddr: address.String(), ConnectedParties: NetAddrMapToStringMap(addresses)})
+			err := SendMessage(conn, Message{SenderAddr: address.String()})
 
 			if err != nil {
 				fmt.Println("error sending address:", err)
 				return
 			}
-
 		}
 	}
 }
@@ -200,7 +205,7 @@ const (
 	PingRequest = iota
 	PingResponse
 	AddMeRequest
-	AddMeResponse
-	ShareAddressRequest
+	SharePeersRequest
+	SharePeersResponse
 	BroadcastMessage
 )

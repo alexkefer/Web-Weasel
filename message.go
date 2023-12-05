@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
 type Message struct {
 	Code             int
 	SenderAddr       string
-	ConnectedParties map[string]int
+	Peers            []string
 	BroadcastMessage string
 }
 
@@ -18,12 +19,21 @@ func ReceiveMessage(conn net.Conn) (Message, error) {
 	var message Message
 
 	err := decoder.Decode(&message)
+	if err != nil {
+		fmt.Println("error receiving message:", err)
+	}
 	return message, err
 }
 
 func SendMessage(conn net.Conn, message Message) error {
 	encoder := json.NewEncoder(conn)
-	return encoder.Encode(message)
+	err := encoder.Encode(message)
+
+	if err != nil {
+		fmt.Println("error sending message:", err)
+	}
+
+	return err
 }
 
 func NetAddrMapToStringMap(netAddrMap map[net.Addr]int) map[string]int {

@@ -30,7 +30,7 @@ const (
 )
 
 // ParseCommands -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
-func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedParties map[net.Addr]int) {
+func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -43,7 +43,7 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 
 		switch command {
 		case "list":
-			ListConnections(connectedParties)
+			ListConnections(peerMap)
 		case "broadcast":
 			fmt.Print("[enter message]: ")
 			if !scanner.Scan() {
@@ -51,9 +51,11 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 			}
 			message := scanner.Text()
 
-			for toAddr, _ := range connectedParties {
-				SendBroadcastMessage(toAddr, myAddr, message)
+			peerMap.mutex.RLock()
+			for _, peer := range peerMap.peers {
+				SendBroadcastMessage(peer.addr, myAddr, message)
 			}
+			peerMap.mutex.RUnlock()
 
 		case "msg":
 			fmt.Print("[enter target address]: ")
@@ -86,12 +88,14 @@ func ParseCommands(addressChan chan<- net.Addr, myAddr net.Addr, connectedPartie
 	}
 }
 
-func ListConnections(addresses map[net.Addr]int) {
+func ListConnections(peerMap *PeerMap) {
+	peerMap.mutex.RLock()
 	fmt.Printf("Connected Parties: ")
-	for addr, _ := range addresses {
+	for addr, _ := range peerMap.peers {
 		fmt.Printf("%s, ", addr)
 	}
 	fmt.Println()
+	peerMap.mutex.RUnlock()
 }
 
 // Help -- Displays help

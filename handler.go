@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParties map[net.Addr]int) {
+func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
@@ -21,12 +21,12 @@ func RequestHandler(myAddr net.Addr, addressChan chan<- net.Addr, connectedParti
 			fmt.Println("tcp connection error:", connErr)
 		} else {
 			// Here we create a separate goroutine (thread) to handle this connection
-			go HandleConnection(myAddr, conn, addressChan, connectedParties)
+			go HandleConnection(myAddr, conn, peerMap)
 		}
 	}
 }
 
-func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Addr, connectedParties map[net.Addr]int) {
+func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 	message, messageErr := ReceiveMessage(conn)
 
 	if messageErr != nil {
@@ -37,49 +37,43 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, addressChan chan<- net.Add
 	fmt.Printf("code: %d\n>> ", message.Code)
 
 	switch message.Code {
+
 	case AddMeRequest:
-
-		newConnections := StringMapToNetAddrMap(message.ConnectedParties)
-
+		// Peer is asking us to add them to our peer map
 		addrStr := message.SenderAddr
 
-		addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
+		peerAddr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
 
 		if addrParseErr != nil {
 			fmt.Println("addr parse error:", addrParseErr)
 			return
 		}
 
-		// Maybe ping addr here to make sure the address is legit
-		messageErr := SendMessage(conn, Message{Code: AddMeResponse, SenderAddr: myAddr.String(), ConnectedParties: NetAddrMapToStringMap(connectedParties)})
+		peer := Peer{addr: peerAddr}
+		peerMap.AddPeer(peer)
 
-		if messageErr != nil {
-			fmt.Println("send AddMeResponse error:", messageErr)
-			return
-		}
+	case SharePeersRequest:
+		// Peer is asking us for our peer map
 
-		for eachAddr, _ := range newConnections {
-			if eachAddr.String() != myAddr.String() {
-				addressChan <- eachAddr
-			}
-		}
-
-		addressChan <- addr
-	case ShareAddressRequest:
-		// Check if the address is already in the connected parties map and add it if it isn't
 		addrStr := message.SenderAddr
-		addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
+		_, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
 
 		if addrParseErr != nil {
 			fmt.Println("addr parse error:", addrParseErr)
+			CloseConnection(conn)
 			return
 		}
-		addressChan <- addr
 
-		if messageErr != nil {
-			fmt.Println("send ShareAddressResponse error:", messageErr)
-			return
+		peerSlice := make([]string, 0)
+
+		for addr, _ := range peerMap.peers {
+			peerSlice = append(peerSlice, addr)
 		}
+
+		peerMap.mutex.RLock()
+		message = Message{Code: SharePeersResponse, Peers: peerSlice, SenderAddr: myAddr.String()}
+		_ = SendMessage(conn, message)
+		peerMap.mutex.RUnlock()
 
 	case BroadcastMessage:
 		fmt.Printf("received broadcast message from %s: %s\n", message.SenderAddr, message.BroadcastMessage)
