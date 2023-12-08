@@ -52,6 +52,14 @@ func main() {
 
 	// Runtime loop
 	ParseCommands(myAddr, &peerMap)
+
+	peerMap.mutex.RLock()
+	for _, peer := range peerMap.peers {
+		if peer.addr != myAddr {
+			SendRemoveMeRequest(myAddr, peer.addr)
+		}
+	}
+	peerMap.mutex.RUnlock()
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine
@@ -97,6 +105,23 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
 
 	err = conn.Close()
 	peerMap.AddPeer(Peer{addr: to})
+}
+
+func SendRemoveMeRequest(from net.Addr, to net.Addr) {
+	// Connect to the seed address
+	fmt.Println("connecting to:", to)
+	conn, connErr := MakeTcpConnection(to)
+	if connErr != nil {
+		return
+	}
+
+	message := Message{Code: RemoveMeRequest, SenderAddr: from.String()}
+	err := SendMessage(conn, message)
+	if err != nil {
+		return
+	}
+
+	err = conn.Close()
 }
 
 func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
@@ -206,4 +231,5 @@ const (
 	SharePeersRequest
 	SharePeersResponse
 	BroadcastMessage
+	RemoveMeRequest
 )

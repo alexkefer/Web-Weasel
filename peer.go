@@ -25,6 +25,13 @@ func (peerMap *PeerMap) AddPeer(peer Peer) {
 
 }
 
+func (peerMap *PeerMap) RemovePeer(addr string) {
+	peerMap.mutex.Lock()
+	delete(peerMap.peers, addr)
+	peerMap.mutex.Unlock()
+
+}
+
 type Peer struct {
 	addr net.Addr
 }

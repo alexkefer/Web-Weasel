@@ -76,6 +76,9 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 	case BroadcastMessage:
 		fmt.Printf("received broadcast message from %s: %s\n", message.SenderAddr, message.BroadcastMessage)
 
+	case RemoveMeRequest:
+		peerMap.RemovePeer(message.SenderAddr)
+
 	default:
 		fmt.Printf("invalid code %d, closing connection.\n", message.Code)
 
