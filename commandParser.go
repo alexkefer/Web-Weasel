@@ -29,9 +29,13 @@ const (
 	HelpCommand      = 4
 )
 
-// ParseCommands -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
-func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
+// RunCommandParser -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
+func RunCommandParser(myAddr net.Addr, peerMap *PeerMap, exitChannel chan<- bool) {
+	parseCommands(myAddr, peerMap)
+	exitChannel <- true
+}
 
+func parseCommands(myAddr net.Addr, peerMap *PeerMap) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		// Read a command from the user

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"time"
 )
 
@@ -50,8 +51,22 @@ func main() {
 		}
 	}
 
-	// Runtime loop
-	ParseCommands(myAddr, &peerMap)
+	exitChannel := make(chan bool)
+	osSignals := make(chan os.Signal, 1)
+	signal.Notify(osSignals, os.Interrupt)
+	go func() {
+		for range osSignals {
+			exitChannel <- true
+		}
+	}()
+
+	go RunCommandParser(myAddr, &peerMap, exitChannel)
+
+	for {
+		if <-exitChannel {
+			break
+		}
+	}
 
 	peerMap.mutex.RLock()
 	for _, peer := range peerMap.peers {
@@ -90,7 +105,6 @@ func findOpenPort(startPort, endPort int) (string, error) {
 
 // SendAddMeRequest This function sends the AddMeRequest message to the seed address
 func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
-	// Connect to the seed address
 	fmt.Println("connecting to:", to)
 	conn, connErr := MakeTcpConnection(to)
 	if connErr != nil {
@@ -108,8 +122,7 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
 }
 
 func SendRemoveMeRequest(from net.Addr, to net.Addr) {
-	// Connect to the seed address
-	fmt.Println("connecting to:", to)
+	fmt.Println("disconnecting  from:", to)
 	conn, connErr := MakeTcpConnection(to)
 	if connErr != nil {
 		return
