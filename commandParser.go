@@ -102,8 +102,8 @@ func ListConnections(peerMap *PeerMap) {
 func Help() {
 	fmt.Println("Commands:")
 	fmt.Println("  - list")
-	fmt.Println("  - broadcast <message> -- broadcast a message to all connected parties")
-	fmt.Println("  - msg <ip address>:<port> <message> -- send a message to a specific address")
+	fmt.Println("  - broadcast -- broadcast a message to all connected parties")
+	fmt.Println("  - msg -- send a message to a specific address")
 	fmt.Println("  - exit -- exit the program")
 	fmt.Println("  - help -- display help")
 }

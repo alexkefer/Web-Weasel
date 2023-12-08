@@ -34,8 +34,6 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 		return
 	}
 
-	fmt.Printf("code: %d\n>> ", message.Code)
-
 	switch message.Code {
 
 	case AddMeRequest:
