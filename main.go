@@ -51,9 +51,7 @@ func main() {
 	}
 
 	// Runtime loop
-	go ParseCommands(myAddr, &peerMap)
-	for {
-	}
+	ParseCommands(myAddr, &peerMap)
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine

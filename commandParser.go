@@ -37,7 +37,7 @@ func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
 		// Read a command from the user
 		fmt.Print(">> ")
 		if !scanner.Scan() {
-			break
+			return
 		}
 		command := scanner.Text()
 
@@ -47,7 +47,7 @@ func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
 		case "broadcast":
 			fmt.Print("[enter message]: ")
 			if !scanner.Scan() {
-				break
+				return
 			}
 			message := scanner.Text()
 
@@ -60,7 +60,7 @@ func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
 		case "msg":
 			fmt.Print("[enter target address]: ")
 			if !scanner.Scan() {
-				break
+				return
 			}
 			addressStr := scanner.Text()
 
@@ -72,14 +72,14 @@ func ParseCommands(myAddr net.Addr, peerMap *PeerMap) {
 
 			fmt.Print("[enter message]: ")
 			if !scanner.Scan() {
-				break
+				return
 			}
 			message := scanner.Text()
 
 			SendBroadcastMessage(toAddr, myAddr, message)
 
 		case "exit":
-			fmt.Println("WIP")
+			return
 		case "help":
 			Help()
 		default:
