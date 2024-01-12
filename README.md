@@ -14,5 +14,9 @@ go run . <ip addr>:<port>
 ``
 
 # To Do
-- [x] Implement a way to send a message to a specific peer and wait for a response
-- [x] Implement a command scheme to allow for user input to be sent to the network
+- [ ] Build functionality to download webpages (static webpages)
+- [ ] Design frontend interface
+- [ ] Disconnect Functionality
+- [x] Store List of available hosts
+- [ ] Store List of websites downloaded on the available host.
+- [ ] Request Website functionality
