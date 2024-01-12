@@ -1,5 +1,5 @@
-# p2pWebSearch
-P2P Web Search - WWU Senior Project - Alex Kefer, Keagan Edwards, Ryan Martin, Khang Tran
+# p2p Web Cache
+P2P Web Cache - WWU Senior Project - Alex Kefer, Keagan Edwards, Ryan Martin, Khang Tran
 Originally Built by Keagan Edwards, Modified by Alex Kefer Version 1.0.0
 Program can be run using the following command.
 
