@@ -15,7 +15,7 @@ func main() {
 		fmt.Println("error: either 0 or 1 arguments expected")
 		return
 	}
-	port, portErr := findOpenPort(8080, 8100)
+	port, portErr := findOpenPort(9000, 9100)
 	if portErr != nil {
 		fmt.Println("error finding open port:", portErr)
 		return
@@ -60,6 +60,7 @@ func main() {
 		}
 	}()
 
+	go RunHttpServer(&peerMap, exitChannel)
 	go RunCommandParser(myAddr, &peerMap, exitChannel)
 
 	for {
