@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Extension</title>
+  <link rel="stylesheet" type="text/css" href="../CSS/styles.css">
+  <script src="../JS/popup.js"></script>
+</head>
+<body>
+
+  <label class="user-info">
+    <span class="device-info-text">Public Device Name</span>
+    <span class="ip-adr-text">Node IP Addresses</span>
+    <span class="neighbor-ip-text">Nearest Connection Node</span>
+  </label>
+
+  <label class="icon">
+    <div class="icon-container">
+      <button id="iconButton" class="iconButton">
+        <img class="icon-img" src="../images/on_power_icon.png" alt="Icon">
+      </button>
+    </div>
+  </label>
+
+  <label class="switch">
+    <span class="label-text">Private Connection Request</span>
+    <div class="slider-container">
+      <input type="checkbox" id="toggleButton1" class="switch-input">
+      <span class="slider"></span>
+    </div>
+  </label>
+
+  <label class="switch">
+    <span class="label-text">Hide Public Device Name</span>
+    <div class="slider-container">
+      <input type="checkbox" id="toggleButton2" class="switch-input">
+      <span class="slider"></span>
+    </div>
+  </label>
+
+  <label class="switch">
+    <span class="label-text">Automatic Resource Sharing</span>
+    <div class="slider-container">
+      <input type="checkbox" id="toggleButton3" class="switch-input">
+      <span class="slider"></span>
+    </div>
+  </label>
+
+  <label class="switch">
+    <span class="label-text">Automatic Resource Archiving </span>
+    <div class="slider-container">
+      <input type="checkbox" id="toggleButton4" class="switch-input">
+      <span class="slider"></span>
+    </div>
+  </label>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+  "name": "Simple Extension",
+  "version": "1.0",
+  "description": "A simple Chrome extension with an on/off button",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "browser_action": {
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    },
+    "default_title": "Simple Extension",
+    "default_popup": "HTML/popup.html"
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "background": {
+    "scripts": ["JS/background.js"],
+    "persistent": false
+  }
+}
