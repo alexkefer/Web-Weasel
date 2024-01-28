@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/webpage_style.css">
+    <title>File Download Example</title>
+</head>
+<body>
+    <header>
+        <div id="hamburger" class="collapsed" onclick="toggleSidebar()"> <!-- Add 'collapsed' class to the hamburger button -->
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <h1>File Download Example</h1>
+        
+    </header>
+
+    <main>
+        <aside id="sidebar" class="collapsed"> <!-- Add 'collapsed' class to the sidebar -->
+            <!-- Add other sidebar content here -->
+            <div class="sidebar-item" onclick="download()">Downloaded</div>
+            <div class="sidebar-item" onclick="resource()">Resource</div>
+            <div class="sidebar-item" onclick="openSettings()">Settings</div>
+        </aside>
+
+        <ul id="fileList" class="file-list"></ul>
+    </main>
+
+    <script src="../JS/webpage.js"></script>
+</body>
+</html>

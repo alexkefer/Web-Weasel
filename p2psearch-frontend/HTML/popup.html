@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Extension</title>
-  <link rel="stylesheet" type="text/css" href="../CSS/styles.css">
+  <link rel="stylesheet" type="text/css" href="../CSS/popup_styles.css">
   <script src="../JS/popup.js"></script>
 </head>
 <body>
@@ -22,6 +22,10 @@
       </button>
     </div>
   </label>
+
+  <button onclick="window.open('../HTML/webpage.html', '_blank')" type="button" class="custom-button">
+    <a href="../HTML/webpage.html" target="_blank">Go to Web App</a>
+  </button>  
 
   <label class="switch">
     <span class="label-text">Private Connection Request</span>
@@ -48,11 +52,12 @@
   </label>
 
   <label class="switch">
-    <span class="label-text">Automatic Resource Archiving </span>
+    <span class="label-text">Automatic Resource Archiving</span>
     <div class="slider-container">
       <input type="checkbox" id="toggleButton4" class="switch-input">
       <span class="slider"></span>
     </div>
   </label>
+
 </body>
 </html>
