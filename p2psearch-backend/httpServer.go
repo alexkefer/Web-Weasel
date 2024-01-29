@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"html"
 	"net/http"
 	"net/url"
@@ -27,7 +28,7 @@ func RunHttpServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
 		retrieveFileHandler(w, r)
 	})
 
-	port, _ := findOpenPort(8080, 8180)
+	port, _ := utils.FindOpenPort(8080, 8180)
 
 	fmt.Printf("opening http server on port %s\n", port)
 
