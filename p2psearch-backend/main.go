@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/peer"
 	"net"
 	"os"
 	"os/signal"
@@ -28,8 +29,8 @@ func main() {
 		return
 	}
 
-	peerMap := PeerMap{peers: make(map[string]Peer)}
-	myPeer := Peer{addr: myAddr}
+	peerMap := peer.PeerMap{Peers: make(map[string]peer.Peer)}
+	myPeer := peer.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
 	go RequestHandler(myAddr, &peerMap)
@@ -69,13 +70,13 @@ func main() {
 		}
 	}
 
-	peerMap.mutex.RLock()
-	for _, peer := range peerMap.peers {
-		if peer.addr != myAddr {
-			SendRemoveMeRequest(myAddr, peer.addr)
+	peerMap.Mutex.RLock()
+	for _, peer := range peerMap.Peers {
+		if peer.Addr != myAddr {
+			SendRemoveMeRequest(myAddr, peer.Addr)
 		}
 	}
-	peerMap.mutex.RUnlock()
+	peerMap.Mutex.RUnlock()
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine
@@ -105,7 +106,7 @@ func findOpenPort(startPort, endPort int) (string, error) {
 }
 
 // SendAddMeRequest This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
+func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *peer.PeerMap) {
 	fmt.Println("connecting to:", to)
 	conn, connErr := MakeTcpConnection(to)
 	if connErr != nil {
@@ -119,7 +120,7 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
 	}
 
 	err = conn.Close()
-	peerMap.AddPeer(Peer{addr: to})
+	peerMap.AddPeer(peer.Peer{Addr: to})
 }
 
 func SendRemoveMeRequest(from net.Addr, to net.Addr) {
@@ -138,7 +139,7 @@ func SendRemoveMeRequest(from net.Addr, to net.Addr) {
 	err = conn.Close()
 }
 
-func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
+func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *peer.PeerMap) {
 	conn, connErr := MakeTcpConnection(toPeersOf)
 	if connErr != nil {
 		return

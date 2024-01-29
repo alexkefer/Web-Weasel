@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/peer"
 	"html"
 	"net/http"
 	"net/url"
 )
 
-func RunHttpServer(peerMap *PeerMap, shutdownChan chan<- bool) {
+func RunHttpServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -42,12 +43,12 @@ func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<-
 	fmt.Fprintf(w, "Shutting down server...")
 }
 
-func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *PeerMap) {
-	peerMap.mutex.RLock()
-	for key, _ := range peerMap.peers {
+func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *peer.PeerMap) {
+	peerMap.Mutex.RLock()
+	for key, _ := range peerMap.Peers {
 		fmt.Fprintf(w, "%s\n", html.EscapeString(key))
 	}
-	peerMap.mutex.RUnlock()
+	peerMap.Mutex.RUnlock()
 }
 
 func storeFileHandler(w http.ResponseWriter, r *http.Request) {
