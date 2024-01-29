@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/httpServer"
 	"github.com/alexkefer/p2psearch-backend/peer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
@@ -62,7 +63,7 @@ func main() {
 		}
 	}()
 
-	go RunHttpServer(&peerMap, exitChannel)
+	go httpServer.StartServer(&peerMap, exitChannel)
 	go RunCommandParser(myAddr, &peerMap, exitChannel)
 
 	for {

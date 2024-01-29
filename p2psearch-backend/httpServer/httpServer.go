@@ -1,4 +1,4 @@
-package main
+package httpServer
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-func RunHttpServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
+func StartServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
