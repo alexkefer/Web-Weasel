@@ -19,13 +19,13 @@ func BuildDownloadedWebpage(url string) {
 		fmt.Println("error downloading page:", err)
 		return
 	}
-	savePage(pageHtml, url, "savedPages")
-	println(parseSourceLocation(url))
-	_, err = FindAssets(parseSourceLocation(url), pageHtml)
-	if err != nil {
-		fmt.Println("error finding assets:", err)
+	savePage(pageHtml, url, "savedPages", ".html")
+	err2 := downloadAllAssets(parseSourceLocation(url), pageHtml)
+	if err2 != nil {
+		fmt.Println("error downloading assets:", err2)
 		return
 	}
+	println("Successfully downloaded webpage: " + url)
 }
 
 func DownloadPage(url string) (string, error) {
@@ -50,24 +50,61 @@ func DownloadPage(url string) (string, error) {
 	return content, nil
 }
 
-func FindAssets(baseURL, pageHtml string) ([]string, error) {
-	assets := []string{}
-	println("base url:", baseURL)
-	tok := html.NewTokenizer(strings.NewReader(pageHtml))
+func DownloadCSS(url string) {
+	// takes in url and returns the css file
+	print(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	println(url)
+	if resp.StatusCode != 200 {
+		panic("error getting url:" + string(rune(resp.StatusCode)))
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	savePage(string(data), url, "savedPages", ".css")
+}
+
+func downloadAllAssets(baseURL, htmlContent string) error {
+	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
 	for {
-		tType := tok.Next()
-		switch tType {
+		tokenType := tokenizer.Next()
+		switch tokenType {
 		case html.ErrorToken:
-			return assets, nil
-		case html.StartTagToken:
-			t := tok.Token()
-			switch t.Data {
-			case "link", "script", "img", "audio", "video":
-				for _, a := range t.Attr {
-					if a.Key == "href" || a.Key == "src" {
-						asset := buildURL(baseURL, a.Val)
-						assets = append(assets, asset)
-						downloadAsset(baseURL, a.Val)
+			return nil
+		case html.StartTagToken, html.SelfClosingTagToken:
+			token := tokenizer.Token()
+			switch token.Data {
+			case "link":
+				for _, attr := range token.Attr {
+					if attr.Key == "rel" && strings.Contains(attr.Val, "stylesheet") {
+						if href, ok := getAttributeValue(token, "href"); ok {
+							cssURL := buildURL(baseURL, href)
+							DownloadCSS(cssURL)
+						}
+					}
+				}
+			case "script":
+				for _, attr := range token.Attr {
+					if attr.Key == "src" {
+						if src, ok := getAttributeValue(token, "src"); ok {
+							jsURL := buildURL(baseURL, src)
+							DownloadJS(jsURL)
+						}
+					}
+				}
+			case "img", "audio", "video":
+				for _, attr := range token.Attr {
+					if attr.Key == "src" {
+						if src, ok := getAttributeValue(token, "src"); ok {
+							println("src: " + src)
+							downloadAsset(baseURL, src)
+						}
 					}
 				}
 			}
@@ -75,39 +112,69 @@ func FindAssets(baseURL, pageHtml string) ([]string, error) {
 	}
 }
 
+func DownloadJS(url string) {
+	// takes in url and returns the js file
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	println(url)
+	if resp.StatusCode != 200 {
+		panic("error getting url:" + string(rune(resp.StatusCode)))
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	savePage(string(data), url, "savedPages", ".js")
+}
+
+func getAttributeValue(token html.Token, key string) (string, bool) {
+	for _, attr := range token.Attr {
+		if attr.Key == key {
+			return attr.Val, true
+		}
+	}
+	return "", false
+}
+
 func buildURL(baseURL, assetURL string) string {
 	// takes in a base url and an asset url and returns the full url
 	if strings.HasPrefix(assetURL, "http") || strings.HasPrefix(assetURL, "https") {
 		return assetURL
-	} else if strings.HasPrefix(assetURL, "/") {
+	} else if strings.HasPrefix(assetURL, "/") || strings.HasSuffix(baseURL, "/") {
 		return baseURL + assetURL
+	} else if strings.HasPrefix(assetURL, "//") {
+		println("B: " + "https:" + assetURL)
+		return "https:" + assetURL
 	} else {
+		println("A: " + baseURL + "/" + urlCleaner(assetURL))
 		return baseURL + "/" + urlCleaner(assetURL)
 	}
 }
 
+// function struggles with external sites, idk why im tired. will fix later
 func downloadAsset(baseURL, url string) {
-	// takes in url and downloads the asset to the appropriate location
+	println("downloading asset: " + url + " " + baseURL)
 	resp, err := http.Get(buildURL(baseURL, url))
 	if err != nil {
-		panic("Cannot access asset: " + buildURL(baseURL, url) + " " + err.Error())
+		println("Cannot access asset: " + buildURL(baseURL, url) + " " + err.Error())
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {
 			fmt.Println("Asset not found " + buildURL(baseURL, url))
-			return
 		}
-		panic("error getting url:" + string(rune(resp.StatusCode)))
-
+		println("error getting url:" + string(rune(resp.StatusCode)))
 	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
 	content := string(data)
-
-	savePage(content, buildURL(baseURL, url), "savedPages")
+	savePage(content, url, "savedPages", "")
 }
 
 func urlCleaner(url string) string {
@@ -165,14 +232,14 @@ func parsePageName(url string) string {
 	return url
 }
 
-func savePage(context string, url string, saveLocation string) {
+func savePage(context string, url string, saveLocation string, fileType string) {
 	err := os.MkdirAll(parsePageLocation(url), os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	// takes in the context of the page and saves it to the save location
-	file, err := os.OpenFile(saveLocation+"/"+urlCleaner(url)+".html", os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(saveLocation+"/"+urlCleaner(url)+fileType, os.O_RDWR|os.O_CREATE, 0644)
 
 	if err != nil {
 		fmt.Println(err)
