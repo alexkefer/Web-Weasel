@@ -1,0 +1,125 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+}
+
+header {
+    background-color: #50bf94;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between; /* Align items horizontally */
+    align-items: center; /* Center items vertically */
+}
+
+main {
+    display: flex;
+    flex: 1;
+}
+
+aside {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    background-color: #fff;
+    color: #ecf0f1;
+    padding: 0px;
+    box-sizing: border-box;
+    transition: width 0.3s;
+}
+
+aside.collapsed {
+    width: 0px;
+}
+
+/*Sidebar*/
+.sidebar-item {
+    margin: 2px;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    background-color: #50bf94;
+    transition: background-color 0.3s;
+}
+
+.sidebar-item:hover {
+    background-color: #A2E4B8;
+}
+
+ #sidebar.collapsed .sidebar-item {
+            display: none;
+}
+
+/* Folder styles */
+.folder-list-item {
+    list-style-type: none;
+    margin: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.folder-toggle {
+    cursor: pointer;
+}
+
+.file-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-list-item {
+    margin: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.download-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #50bf94;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.download-button:hover {
+    background-color: #A2E4B8;
+}
+
+/* Hamburger menu styles */
+#hamburger {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 3px 0;
+    transition: 0.4s;
+}
+
+#hamburger .bar:nth-child(1) {
+    transform: none;
+}
+
+#hamburger .bar:nth-child(2) {
+    opacity: 1;
+}
+
+#hamburger .bar:nth-child(3) {
+    transform: none;
+}
+
