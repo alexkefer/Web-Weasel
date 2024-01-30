@@ -17,6 +17,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/peer"
 	"net"
 	"os"
 )
@@ -30,12 +31,12 @@ const (
 )
 
 // RunCommandParser -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
-func RunCommandParser(myAddr net.Addr, peerMap *PeerMap, exitChannel chan<- bool) {
+func RunCommandParser(myAddr net.Addr, peerMap *peer.PeerMap, exitChannel chan<- bool) {
 	parseCommands(myAddr, peerMap)
 	exitChannel <- true
 }
 
-func parseCommands(myAddr net.Addr, peerMap *PeerMap) {
+func parseCommands(myAddr net.Addr, peerMap *peer.PeerMap) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		// Read a command from the user
@@ -55,11 +56,11 @@ func parseCommands(myAddr net.Addr, peerMap *PeerMap) {
 			}
 			message := scanner.Text()
 
-			peerMap.mutex.RLock()
-			for _, peer := range peerMap.peers {
-				SendBroadcastMessage(peer.addr, myAddr, message)
+			peerMap.Mutex.RLock()
+			for _, peer := range peerMap.Peers {
+				SendBroadcastMessage(peer.Addr, myAddr, message)
 			}
-			peerMap.mutex.RUnlock()
+			peerMap.Mutex.RUnlock()
 
 		case "msg":
 			fmt.Print("[enter target address]: ")
@@ -92,14 +93,14 @@ func parseCommands(myAddr net.Addr, peerMap *PeerMap) {
 	}
 }
 
-func ListConnections(peerMap *PeerMap) {
-	peerMap.mutex.RLock()
+func ListConnections(peerMap *peer.PeerMap) {
+	peerMap.Mutex.RLock()
 	fmt.Printf("Connected Parties: ")
-	for addr, _ := range peerMap.peers {
+	for addr, _ := range peerMap.Peers {
 		fmt.Printf("%s, ", addr)
 	}
 	fmt.Println()
-	peerMap.mutex.RUnlock()
+	peerMap.Mutex.RUnlock()
 }
 
 // Help -- Displays help

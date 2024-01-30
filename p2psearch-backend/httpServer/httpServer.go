@@ -1,13 +1,15 @@
-package main
+package httpServer
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"html"
 	"net/http"
 	"net/url"
 )
 
-func RunHttpServer(peerMap *PeerMap, shutdownChan chan<- bool) {
+func StartServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +28,7 @@ func RunHttpServer(peerMap *PeerMap, shutdownChan chan<- bool) {
 		retrieveFileHandler(w, r)
 	})
 
-	port, _ := findOpenPort(8080, 8180)
+	port, _ := utils.FindOpenPort(8080, 8180)
 
 	fmt.Printf("opening http server on port %s\n", port)
 
@@ -42,12 +44,12 @@ func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<-
 	fmt.Fprintf(w, "Shutting down server...")
 }
 
-func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *PeerMap) {
-	peerMap.mutex.RLock()
-	for key, _ := range peerMap.peers {
+func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *peer.PeerMap) {
+	peerMap.Mutex.RLock()
+	for key, _ := range peerMap.Peers {
 		fmt.Fprintf(w, "%s\n", html.EscapeString(key))
 	}
-	peerMap.mutex.RUnlock()
+	peerMap.Mutex.RUnlock()
 }
 
 func storeFileHandler(w http.ResponseWriter, r *http.Request) {

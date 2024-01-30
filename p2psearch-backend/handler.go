@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/peer"
 	"net"
 )
 
-func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
+func RequestHandler(myAddr net.Addr, peerMap *peer.PeerMap) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
@@ -26,7 +27,7 @@ func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
 	}
 }
 
-func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
+func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *peer.PeerMap) {
 	message, messageErr := ReceiveMessage(conn)
 
 	if messageErr != nil {
@@ -47,7 +48,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 			return
 		}
 
-		peer := Peer{addr: peerAddr}
+		peer := peer.Peer{Addr: peerAddr}
 		peerMap.AddPeer(peer)
 
 	case SharePeersRequest:
@@ -64,14 +65,14 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 
 		peerSlice := make([]string, 0)
 
-		for addr, _ := range peerMap.peers {
+		for addr, _ := range peerMap.Peers {
 			peerSlice = append(peerSlice, addr)
 		}
 
-		peerMap.mutex.RLock()
+		peerMap.Mutex.RLock()
 		message = Message{Code: SharePeersResponse, Peers: peerSlice, SenderAddr: myAddr.String()}
 		_ = SendMessage(conn, message)
-		peerMap.mutex.RUnlock()
+		peerMap.Mutex.RUnlock()
 
 	case BroadcastMessage:
 		fmt.Printf("received broadcast message from %s: %s\n", message.SenderAddr, message.BroadcastMessage)

@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/httpServer"
+	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
 	"os"
 	"os/signal"
@@ -15,7 +18,7 @@ func main() {
 		fmt.Println("error: either 0 or 1 arguments expected")
 		return
 	}
-	port, portErr := findOpenPort(9000, 9100)
+	port, portErr := utils.FindOpenPort(9000, 9100)
 	if portErr != nil {
 		fmt.Println("error finding open port:", portErr)
 		return
@@ -28,8 +31,8 @@ func main() {
 		return
 	}
 
-	peerMap := PeerMap{peers: make(map[string]Peer)}
-	myPeer := Peer{addr: myAddr}
+	peerMap := peer.PeerMap{Peers: make(map[string]peer.Peer)}
+	myPeer := peer.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
 	go RequestHandler(myAddr, &peerMap)
@@ -60,7 +63,7 @@ func main() {
 		}
 	}()
 
-	go RunHttpServer(&peerMap, exitChannel)
+	go httpServer.StartServer(&peerMap, exitChannel)
 	go RunCommandParser(myAddr, &peerMap, exitChannel)
 
 	for {
@@ -69,13 +72,13 @@ func main() {
 		}
 	}
 
-	peerMap.mutex.RLock()
-	for _, peer := range peerMap.peers {
-		if peer.addr != myAddr {
-			SendRemoveMeRequest(myAddr, peer.addr)
+	peerMap.Mutex.RLock()
+	for _, peer := range peerMap.Peers {
+		if peer.Addr != myAddr {
+			SendRemoveMeRequest(myAddr, peer.Addr)
 		}
 	}
-	peerMap.mutex.RUnlock()
+	peerMap.Mutex.RUnlock()
 }
 
 // GetLocalIPAddress /* This function returns the local IP address of the machine
@@ -89,23 +92,8 @@ func GetLocalIPAddress() string {
 	return localAddr.IP.String()
 }
 
-// This function finds an open port in the range [startPort, endPort]
-func findOpenPort(startPort, endPort int) (string, error) {
-	for port := startPort; port <= endPort; port++ {
-		// Attempt to bind to this port
-		listener, listenerErr := net.Listen("tcp", fmt.Sprintf(":%d", port))
-		if listenerErr == nil {
-			// If we were able to bind, close the listener and return the port
-			listener.Close()
-			return fmt.Sprintf(":%d", port), nil
-		}
-	}
-	// If we were unable to bind to any ports, return an empty string
-	return "", fmt.Errorf("unable to find open port")
-}
-
 // SendAddMeRequest This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
+func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *peer.PeerMap) {
 	fmt.Println("connecting to:", to)
 	conn, connErr := MakeTcpConnection(to)
 	if connErr != nil {
@@ -119,7 +107,7 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
 	}
 
 	err = conn.Close()
-	peerMap.AddPeer(Peer{addr: to})
+	peerMap.AddPeer(peer.Peer{Addr: to})
 }
 
 func SendRemoveMeRequest(from net.Addr, to net.Addr) {
@@ -138,7 +126,7 @@ func SendRemoveMeRequest(from net.Addr, to net.Addr) {
 	err = conn.Close()
 }
 
-func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
+func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *peer.PeerMap) {
 	conn, connErr := MakeTcpConnection(toPeersOf)
 	if connErr != nil {
 		return
