@@ -67,7 +67,6 @@ func main() {
 	fileDataStore := fileData.CreateFileDataStore()
 
 	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel)
-	go RunCommandParser(myAddr, &peerMap, exitChannel)
 
 	for {
 		if <-exitChannel {
