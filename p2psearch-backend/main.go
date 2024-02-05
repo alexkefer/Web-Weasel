@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/httpServer"
 	"github.com/alexkefer/p2psearch-backend/peer"
 	"github.com/alexkefer/p2psearch-backend/utils"
@@ -63,7 +64,9 @@ func main() {
 		}
 	}()
 
-	go httpServer.StartServer(&peerMap, exitChannel)
+	fileDataStore := fileData.CreateFileDataStore()
+
+	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel)
 	go RunCommandParser(myAddr, &peerMap, exitChannel)
 
 	for {

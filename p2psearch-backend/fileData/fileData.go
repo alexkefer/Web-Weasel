@@ -26,6 +26,13 @@ type FileDataStore struct {
 	data  map[string]FileData
 }
 
+func CreateFileDataStore() FileDataStore {
+	return FileDataStore{
+		mutex: sync.RWMutex{},
+		data:  make(map[string]FileData),
+	}
+}
+
 func (store *FileDataStore) HasFileStored(path string) bool {
 	store.mutex.RLock()
 	_, hasFile := store.data[path]

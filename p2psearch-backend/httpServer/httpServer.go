@@ -2,6 +2,7 @@ package httpServer
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/peer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"html"
@@ -9,7 +10,7 @@ import (
 	"net/url"
 )
 
-func StartServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
+func StartServer(peerMap *peer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,7 @@ func StartServer(peerMap *peer.PeerMap, shutdownChan chan<- bool) {
 	})
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
-		retrieveFileHandler(w, r)
+		retrieveFileHandler(w, r, fileData)
 	})
 
 	port, _ := utils.FindOpenPort(8080, 8180)
@@ -56,6 +57,7 @@ func storeFileHandler(w http.ResponseWriter, r *http.Request) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Error storing file: %s", err)
 	} else {
 		// TODO
@@ -63,14 +65,21 @@ func storeFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func retrieveFileHandler(w http.ResponseWriter, r *http.Request) {
+func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileData.FileDataStore) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Error retrieving file: %s", err)
-	} else {
+		return
+	}
+
+	if fileData.HasFileStored(path) {
 		// TODO
-		fmt.Fprintf(w, "Server is retrieving file found at %q", path)
+	} else {
+		// TODO: Ask other hosts on the network if they have it.
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Server has no resource associated with path: %q", path)
 	}
 }
 
