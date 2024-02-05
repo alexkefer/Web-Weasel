@@ -2,30 +2,33 @@ package p2pServer
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
 )
 
 // SendAddMeRequest This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) {
-	fmt.Println("connecting to:", to)
+func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) error {
+	log.Info("connecting to seed address %s", to)
 	conn, connErr := utils.MakeTcpConnection(to)
 	if connErr != nil {
-		return
+		return connErr
 	}
 
 	message := Message{Code: AddMeRequest, SenderAddr: from.String()}
 	err := SendMessage(conn, message)
 	if err != nil {
-		return
+		return err
 	}
 
 	err = conn.Close()
 	peerMap.AddPeer(Peer{Addr: to})
+
+	return nil
 }
 
 func SendRemoveMeRequest(from net.Addr, to net.Addr) {
-	fmt.Println("disconnecting  from:", to)
+	log.Info("disconnecting from: %s", to)
 	conn, connErr := utils.MakeTcpConnection(to)
 	if connErr != nil {
 		return
@@ -64,7 +67,7 @@ func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) 
 			addr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
 
 			if addrParseErr != nil {
-				fmt.Println("addr parse error:", addrParseErr)
+				log.Error("addr parse error: %s", addrParseErr)
 				continue
 			}
 
@@ -80,14 +83,14 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 			conn, connErr := net.Dial("tcp", addr.String())
 
 			if connErr != nil {
-				fmt.Println("error connecting to address:", connErr)
+				log.Error("error connecting to address: %s", connErr)
 				return
 			}
 
 			err := SendMessage(conn, Message{SenderAddr: address.String()})
 
 			if err != nil {
-				fmt.Println("error sending address:", err)
+				log.Error("error sending address: %s", err)
 				return
 			}
 		}

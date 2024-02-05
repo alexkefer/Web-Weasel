@@ -1,8 +1,8 @@
 package httpServer
 
 import (
-	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net/http"
@@ -29,7 +29,7 @@ func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, s
 
 	port, _ := utils.FindOpenPort(8080, 8180)
 
-	fmt.Printf("opening http server on port %s\n", port)
+	log.Info("opening http server on port %s", port)
 
 	http.ListenAndServe(port, nil)
 }

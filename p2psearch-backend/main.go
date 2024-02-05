@@ -49,7 +49,13 @@ func main() {
 			log.Error("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			p2pServer.SendAddMeRequest(myAddr, seedAddr, &peerMap)
+			addMeErr := p2pServer.SendAddMeRequest(myAddr, seedAddr, &peerMap)
+
+			if addMeErr != nil {
+				log.Error("could not connect to seed address: %s", addMeErr)
+				return
+			}
+			
 			p2pServer.SendMoreAddMeRequests(myAddr, seedAddr, &peerMap)
 		}
 	}
