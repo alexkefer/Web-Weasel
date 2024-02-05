@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/httpServer"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
@@ -15,19 +15,19 @@ import (
 func main() {
 
 	if len(os.Args) > 2 {
-		fmt.Println("error: either 0 or 1 arguments expected")
+		log.Error("either 0 or 1 arguments expected")
 		return
 	}
 	port, portErr := utils.FindOpenPort(9000, 9100)
 	if portErr != nil {
-		fmt.Println("error finding open port:", portErr)
+		log.Error("error finding open port: %s", portErr)
 		return
 	}
 	address := utils.GetLocalIPAddress() + port
 	myAddr, myAddrParseErr := net.ResolveTCPAddr("tcp", address)
 
 	if myAddrParseErr != nil {
-		fmt.Println("error parsing my ip arg:", myAddrParseErr)
+		log.Error("couldn't parsing my ip arg:", myAddrParseErr)
 		return
 	}
 
@@ -36,7 +36,7 @@ func main() {
 	peerMap.AddPeer(myPeer)
 
 	go p2pServer.RequestHandler(myAddr, &peerMap)
-	fmt.Println("my address:", myAddr)
+	log.Info("my address: %s", myAddr)
 	//addrChan <- myAddr
 
 	// If an address is given, try to join its network
@@ -46,7 +46,7 @@ func main() {
 		seedAddr, addrParseErr := net.ResolveTCPAddr("tcp", seedAddrArg)
 
 		if addrParseErr != nil {
-			fmt.Println("seedAddr parse error:", addrParseErr)
+			log.Error("seedAddr parse error:", addrParseErr)
 			return
 		} else {
 			p2pServer.SendAddMeRequest(myAddr, seedAddr, &peerMap)

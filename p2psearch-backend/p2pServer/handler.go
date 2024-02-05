@@ -1,7 +1,7 @@
 package p2pServer
 
 import (
-	"fmt"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"net"
 )
 
@@ -9,7 +9,7 @@ func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
-		fmt.Println("tcp listen error:", listenErr)
+		log.Error("tcp listen error: %s", listenErr)
 		return
 	}
 
@@ -18,7 +18,7 @@ func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
 		conn, connErr := listener.Accept()
 
 		if connErr != nil {
-			fmt.Println("tcp connection error:", connErr)
+			log.Error("tcp connection error: %s", connErr)
 		} else {
 			// Here we create a separate goroutine (thread) to handle this connection
 			go HandleConnection(myAddr, conn, peerMap)
@@ -30,7 +30,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 	message, messageErr := ReceiveMessage(conn)
 
 	if messageErr != nil {
-		fmt.Println("message receive error:", messageErr)
+		log.Error("message receive error: %s", messageErr)
 		return
 	}
 
@@ -43,7 +43,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 		peerAddr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
 
 		if addrParseErr != nil {
-			fmt.Println("addr parse error:", addrParseErr)
+			log.Error("addr parse error: %s", addrParseErr)
 			return
 		}
 
@@ -57,7 +57,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 		_, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
 
 		if addrParseErr != nil {
-			fmt.Println("addr parse error:", addrParseErr)
+			log.Error("addr parse error: %s", addrParseErr)
 			CloseConnection(conn)
 			return
 		}
@@ -74,13 +74,13 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 		peerMap.Mutex.RUnlock()
 
 	case BroadcastMessage:
-		fmt.Printf("received broadcast message from %s: %s\n", message.SenderAddr, message.BroadcastMessage)
+		log.Info("received broadcast message from %s: %s", message.SenderAddr, message.BroadcastMessage)
 
 	case RemoveMeRequest:
 		peerMap.RemovePeer(message.SenderAddr)
 
 	default:
-		fmt.Printf("invalid code %d, closing connection.\n", message.Code)
+		log.Warn("invalid code %d, closing connection", message.Code)
 
 	}
 
@@ -90,6 +90,6 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 func CloseConnection(conn net.Conn) {
 	err := conn.Close()
 	if err != nil {
-		fmt.Println("connection close error:", err)
+		log.Error("connection close error: %s", err)
 	}
 }
