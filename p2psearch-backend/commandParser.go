@@ -17,7 +17,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"net"
 	"os"
 )
@@ -31,12 +31,12 @@ const (
 )
 
 // RunCommandParser -- Goroutine that parses commands from the user, and sends them to the RequestHandler, automatically resets the prompt after handling a request
-func RunCommandParser(myAddr net.Addr, peerMap *peer.PeerMap, exitChannel chan<- bool) {
+func RunCommandParser(myAddr net.Addr, peerMap *p2pServer.PeerMap, exitChannel chan<- bool) {
 	parseCommands(myAddr, peerMap)
 	exitChannel <- true
 }
 
-func parseCommands(myAddr net.Addr, peerMap *peer.PeerMap) {
+func parseCommands(myAddr net.Addr, peerMap *p2pServer.PeerMap) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		// Read a command from the user
@@ -93,7 +93,7 @@ func parseCommands(myAddr net.Addr, peerMap *peer.PeerMap) {
 	}
 }
 
-func ListConnections(peerMap *peer.PeerMap) {
+func ListConnections(peerMap *p2pServer.PeerMap) {
 	peerMap.Mutex.RLock()
 	fmt.Printf("Connected Parties: ")
 	for addr, _ := range peerMap.Peers {

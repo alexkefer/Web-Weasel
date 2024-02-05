@@ -1,4 +1,4 @@
-package main
+package p2pServer
 
 import (
 	"encoding/json"

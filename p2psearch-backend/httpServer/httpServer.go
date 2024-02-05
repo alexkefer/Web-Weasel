@@ -3,14 +3,14 @@ package httpServer
 import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
-	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"html"
 	"net/http"
 	"net/url"
 )
 
-func StartServer(peerMap *peer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool) {
+func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +45,7 @@ func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<-
 	fmt.Fprintf(w, "Shutting down server...")
 }
 
-func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *peer.PeerMap) {
+func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pServer.PeerMap) {
 	peerMap.Mutex.RLock()
 	for key, _ := range peerMap.Peers {
 		fmt.Fprintf(w, "%s\n", html.EscapeString(key))

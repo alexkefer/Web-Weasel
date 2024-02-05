@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/httpServer"
-	"github.com/alexkefer/p2psearch-backend/peer"
+	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
 	"os"
@@ -32,11 +32,11 @@ func main() {
 		return
 	}
 
-	peerMap := peer.PeerMap{Peers: make(map[string]peer.Peer)}
-	myPeer := peer.Peer{Addr: myAddr}
+	peerMap := p2pServer.PeerMap{Peers: make(map[string]p2pServer.Peer)}
+	myPeer := p2pServer.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
-	go RequestHandler(myAddr, &peerMap)
+	go p2pServer.RequestHandler(myAddr, &peerMap)
 	fmt.Println("my address:", myAddr)
 	//addrChan <- myAddr
 
@@ -96,21 +96,21 @@ func GetLocalIPAddress() string {
 }
 
 // SendAddMeRequest This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *peer.PeerMap) {
+func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *p2pServer.PeerMap) {
 	fmt.Println("connecting to:", to)
 	conn, connErr := MakeTcpConnection(to)
 	if connErr != nil {
 		return
 	}
 
-	message := Message{Code: AddMeRequest, SenderAddr: from.String()}
-	err := SendMessage(conn, message)
+	message := p2pServer.Message{Code: p2pServer.AddMeRequest, SenderAddr: from.String()}
+	err := p2pServer.SendMessage(conn, message)
 	if err != nil {
 		return
 	}
 
 	err = conn.Close()
-	peerMap.AddPeer(peer.Peer{Addr: to})
+	peerMap.AddPeer(p2pServer.Peer{Addr: to})
 }
 
 func SendRemoveMeRequest(from net.Addr, to net.Addr) {
@@ -120,8 +120,8 @@ func SendRemoveMeRequest(from net.Addr, to net.Addr) {
 		return
 	}
 
-	message := Message{Code: RemoveMeRequest, SenderAddr: from.String()}
-	err := SendMessage(conn, message)
+	message := p2pServer.Message{Code: p2pServer.RemoveMeRequest, SenderAddr: from.String()}
+	err := p2pServer.SendMessage(conn, message)
 	if err != nil {
 		return
 	}
@@ -129,19 +129,19 @@ func SendRemoveMeRequest(from net.Addr, to net.Addr) {
 	err = conn.Close()
 }
 
-func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *peer.PeerMap) {
+func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *p2pServer.PeerMap) {
 	conn, connErr := MakeTcpConnection(toPeersOf)
 	if connErr != nil {
 		return
 	}
 
-	message := Message{Code: SharePeersRequest, SenderAddr: from.String()}
-	err := SendMessage(conn, message)
+	message := p2pServer.Message{Code: p2pServer.SharePeersRequest, SenderAddr: from.String()}
+	err := p2pServer.SendMessage(conn, message)
 	if err != nil {
 		return
 	}
 
-	resp, respErr := ReceiveMessage(conn)
+	resp, respErr := p2pServer.ReceiveMessage(conn)
 
 	if respErr != nil {
 		return
@@ -173,7 +173,7 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 				return
 			}
 
-			err := SendMessage(conn, Message{SenderAddr: address.String()})
+			err := p2pServer.SendMessage(conn, p2pServer.Message{SenderAddr: address.String()})
 
 			if err != nil {
 				fmt.Println("error sending address:", err)
@@ -209,13 +209,13 @@ func SendBroadcastMessage(to net.Addr, from net.Addr, messageText string) {
 		return
 	}
 
-	var message = Message{
-		Code:             BroadcastMessage,
+	var message = p2pServer.Message{
+		Code:             p2pServer.BroadcastMessage,
 		SenderAddr:       from.String(),
 		BroadcastMessage: messageText,
 	}
 
-	err := SendMessage(conn, message)
+	err := p2pServer.SendMessage(conn, message)
 
 	if err != nil {
 		fmt.Println("error sending broadcast message:", err)
@@ -227,14 +227,3 @@ func SendBroadcastMessage(to net.Addr, from net.Addr, messageText string) {
 		fmt.Println("error closing connection:", closeErr)
 	}
 }
-
-// This is basically the go equivalent of an enum (a bunch of related constants)
-const (
-	PingRequest = iota
-	PingResponse
-	AddMeRequest
-	SharePeersRequest
-	SharePeersResponse
-	BroadcastMessage
-	RemoveMeRequest
-)

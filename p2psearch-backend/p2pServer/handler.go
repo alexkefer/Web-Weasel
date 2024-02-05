@@ -1,12 +1,11 @@
-package main
+package p2pServer
 
 import (
 	"fmt"
-	"github.com/alexkefer/p2psearch-backend/peer"
 	"net"
 )
 
-func RequestHandler(myAddr net.Addr, peerMap *peer.PeerMap) {
+func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
@@ -27,7 +26,7 @@ func RequestHandler(myAddr net.Addr, peerMap *peer.PeerMap) {
 	}
 }
 
-func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *peer.PeerMap) {
+func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 	message, messageErr := ReceiveMessage(conn)
 
 	if messageErr != nil {
@@ -38,7 +37,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *peer.PeerMap) {
 	switch message.Code {
 
 	case AddMeRequest:
-		// Peer is asking us to add them to our peer map
+		// Peer is asking us to add them to our p2pServer map
 		addrStr := message.SenderAddr
 
 		peerAddr, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)
@@ -48,11 +47,11 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *peer.PeerMap) {
 			return
 		}
 
-		peer := peer.Peer{Addr: peerAddr}
+		peer := Peer{Addr: peerAddr}
 		peerMap.AddPeer(peer)
 
 	case SharePeersRequest:
-		// Peer is asking us for our peer map
+		// Peer is asking us for our p2pServer map
 
 		addrStr := message.SenderAddr
 		_, addrParseErr := net.ResolveTCPAddr("tcp", addrStr)

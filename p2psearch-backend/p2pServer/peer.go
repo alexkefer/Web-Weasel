@@ -1,4 +1,4 @@
-package peer
+package p2pServer
 
 import (
 	"net"
