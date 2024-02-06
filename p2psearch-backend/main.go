@@ -55,7 +55,7 @@ func main() {
 				log.Error("could not connect to seed address: %s", addMeErr)
 				return
 			}
-			
+
 			p2pServer.SendMoreAddMeRequests(myAddr, seedAddr, &peerMap)
 		}
 	}

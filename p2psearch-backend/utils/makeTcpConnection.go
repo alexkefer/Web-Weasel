@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"net"
 	"time"
 )
@@ -10,14 +10,14 @@ func MakeTcpConnection(to net.Addr) (net.Conn, error) {
 	duration, parseErr := time.ParseDuration("5s")
 
 	if parseErr != nil {
-		fmt.Println("duration parse error:", parseErr)
+		log.Error("duration parse error: %s", parseErr)
 		return nil, parseErr
 	}
 
 	conn, connErr := net.DialTimeout("tcp", to.String(), duration)
 
 	if connErr != nil {
-		fmt.Println("error connecting to address:", connErr)
+		log.Error("error connecting to address via TCP: %s", connErr)
 		return nil, connErr
 	}
 
