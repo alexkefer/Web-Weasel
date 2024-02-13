@@ -35,7 +35,7 @@ func main() {
 	myPeer := p2pServer.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
-	go p2pServer.RequestHandler(myAddr, &peerMap)
+	go p2pServer.StartServer(myAddr, &peerMap)
 	log.Info("my address: %s", myAddr)
 	//addrChan <- myAddr
 
@@ -79,11 +79,5 @@ func main() {
 		}
 	}
 
-	peerMap.Mutex.RLock()
-	for _, peer := range peerMap.Peers {
-		if peer.Addr != myAddr {
-			p2pServer.SendRemoveMeRequest(myAddr, peer.Addr)
-		}
-	}
-	peerMap.Mutex.RUnlock()
+	p2pServer.Disconnect(myAddr, &peerMap)
 }

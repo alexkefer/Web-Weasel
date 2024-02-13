@@ -27,22 +27,6 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) error {
 	return nil
 }
 
-func SendRemoveMeRequest(from net.Addr, to net.Addr) {
-	log.Info("disconnecting from: %s", to)
-	conn, connErr := utils.MakeTcpConnection(to)
-	if connErr != nil {
-		return
-	}
-
-	message := Message{Code: RemoveMeRequest, SenderAddr: from.String()}
-	err := SendMessage(conn, message)
-	if err != nil {
-		return
-	}
-
-	err = conn.Close()
-}
-
 func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
 	conn, connErr := utils.MakeTcpConnection(toPeersOf)
 	if connErr != nil {
@@ -73,6 +57,38 @@ func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) 
 
 			SendAddMeRequest(from, addr, peerMap)
 		}
+	}
+}
+
+// Disconnect Sends RemoveMe requests to all peers
+func Disconnect(myAddr net.Addr, peerMap *PeerMap) {
+	log.Info("disconnecting from all peers")
+	peerMap.Mutex.RLock()
+	for _, peer := range peerMap.Peers {
+		if peer.Addr != myAddr {
+			sendRemoveMeRequest(myAddr, peer.Addr)
+		}
+	}
+	peerMap.Mutex.RUnlock()
+}
+
+func sendRemoveMeRequest(from net.Addr, to net.Addr) {
+	log.Info("disconnecting from: %s", to)
+	conn, connErr := utils.MakeTcpConnection(to)
+	if connErr != nil {
+		return
+	}
+
+	message := Message{Code: RemoveMeRequest, SenderAddr: from.String()}
+	err := SendMessage(conn, message)
+	if err != nil {
+		return
+	}
+
+	err = conn.Close()
+
+	if err != nil {
+		log.Error("failed to close connection")
 	}
 }
 

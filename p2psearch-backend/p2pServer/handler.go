@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func RequestHandler(myAddr net.Addr, peerMap *PeerMap) {
+func StartServer(myAddr net.Addr, peerMap *PeerMap) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {

@@ -2,7 +2,7 @@ package p2pServer
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"net"
 )
 
@@ -20,7 +20,7 @@ func ReceiveMessage(conn net.Conn) (Message, error) {
 
 	err := decoder.Decode(&message)
 	if err != nil {
-		fmt.Println("error receiving message:", err)
+		log.Error("failed receiving p2p message:", err)
 	}
 	return message, err
 }
@@ -30,7 +30,7 @@ func SendMessage(conn net.Conn, message Message) error {
 	err := encoder.Encode(message)
 
 	if err != nil {
-		fmt.Println("error sending message:", err)
+		log.Error("failed sending p2p message:", err)
 	}
 
 	return err
