@@ -7,9 +7,21 @@ import (
 	"net"
 )
 
-// SendAddMeRequest This function sends the AddMeRequest message to the seed address
-func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) error {
-	log.Info("connecting to seed address %s", to)
+func Connect(myAddr net.Addr, targetAddr net.Addr, peerMap *PeerMap) error {
+	log.Info("connecting to target address %s", targetAddr)
+	err := sendAddMeRequest(myAddr, targetAddr, peerMap)
+	if err != nil {
+		log.Error("could not connect to target address: %s", err)
+		return err
+	}
+
+	sendAddMeRequestsToPeersOfPeer(myAddr, targetAddr, peerMap)
+
+	return nil
+}
+
+// sendAddMeRequest This function sends the AddMeRequest message to the seed address
+func sendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) error {
 	conn, connErr := utils.MakeTcpConnection(to)
 	if connErr != nil {
 		return connErr
@@ -27,7 +39,7 @@ func SendAddMeRequest(from net.Addr, to net.Addr, peerMap *PeerMap) error {
 	return nil
 }
 
-func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
+func sendAddMeRequestsToPeersOfPeer(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) {
 	conn, connErr := utils.MakeTcpConnection(toPeersOf)
 	if connErr != nil {
 		return
@@ -55,7 +67,7 @@ func SendMoreAddMeRequests(from net.Addr, toPeersOf net.Addr, peerMap *PeerMap) 
 				continue
 			}
 
-			SendAddMeRequest(from, addr, peerMap)
+			sendAddMeRequest(from, addr, peerMap)
 		}
 	}
 }

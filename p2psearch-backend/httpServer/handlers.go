@@ -77,12 +77,11 @@ func connectHandler(w http.ResponseWriter, r *http.Request, myAddr net.Addr, pee
 		return
 	}
 
-	addMeError := p2pNetwork.SendAddMeRequest(myAddr, targetAddr, peerMap)
+	connectErr := p2pNetwork.Connect(myAddr, targetAddr, peerMap)
 
-	if addMeError != nil {
+	if connectErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "failed to connecting to peer: %s", addMeError)
-		log.Error("failed to connect to peer: %s", addMeError)
+		fmt.Fprintf(w, "failed to connecting to peer: %s", connectErr)
 		return
 	}
 
