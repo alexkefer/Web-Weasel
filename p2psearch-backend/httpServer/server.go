@@ -3,13 +3,13 @@ package httpServer
 import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
-	"github.com/alexkefer/p2psearch-backend/p2pServer"
+	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
 	"net/http"
 )
 
-func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
+func StartServer(peerMap *p2pNetwork.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {

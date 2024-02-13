@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
-	"github.com/alexkefer/p2psearch-backend/p2pServer"
+	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
 	"html"
 	"net"
 	"net/http"
@@ -20,7 +20,7 @@ func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<-
 	fmt.Fprintf(w, "Shutting down server...")
 }
 
-func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pServer.PeerMap) {
+func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pNetwork.PeerMap) {
 	peerMap.Mutex.RLock()
 	for key, _ := range peerMap.Peers {
 		fmt.Fprintf(w, "%s\n", html.EscapeString(key))
@@ -58,7 +58,7 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 	}
 }
 
-func connectHandler(w http.ResponseWriter, r *http.Request, myAddr net.Addr, peerMap *p2pServer.PeerMap) {
+func connectHandler(w http.ResponseWriter, r *http.Request, myAddr net.Addr, peerMap *p2pNetwork.PeerMap) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
@@ -77,7 +77,7 @@ func connectHandler(w http.ResponseWriter, r *http.Request, myAddr net.Addr, pee
 		return
 	}
 
-	addMeError := p2pServer.SendAddMeRequest(myAddr, targetAddr, peerMap)
+	addMeError := p2pNetwork.SendAddMeRequest(myAddr, targetAddr, peerMap)
 
 	if addMeError != nil {
 		w.WriteHeader(http.StatusBadRequest)

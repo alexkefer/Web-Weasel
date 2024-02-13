@@ -1,4 +1,4 @@
-package p2pServer
+package p2pNetwork
 
 import (
 	"github.com/alexkefer/p2psearch-backend/log"

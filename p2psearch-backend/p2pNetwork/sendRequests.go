@@ -1,4 +1,4 @@
-package p2pServer
+package p2pNetwork
 
 import (
 	"fmt"
