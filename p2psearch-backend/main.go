@@ -71,7 +71,7 @@ func main() {
 
 	fileDataStore := fileData.CreateFileDataStore()
 
-	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel)
+	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel, myAddr)
 
 	for {
 		if <-exitChannel {

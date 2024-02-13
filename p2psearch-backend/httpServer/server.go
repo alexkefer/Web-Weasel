@@ -5,10 +5,11 @@ import (
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pServer"
 	"github.com/alexkefer/p2psearch-backend/utils"
+	"net"
 	"net/http"
 )
 
-func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool) {
+func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
 	http.HandleFunc("/", helloHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +26,10 @@ func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, s
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
 		retrieveFileHandler(w, r, fileData)
+	})
+
+	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
+		connectHandler(w, r, myAddr, peerMap)
 	})
 
 	port, _ := utils.FindOpenPort(8080, 8180)
