@@ -5,17 +5,23 @@ import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"github.com/alexkefer/p2psearch-backend/webDownloader"
 	"html"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
-func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprintf(w, "bad request")
+func defaultHandler(w http.ResponseWriter, r *http.Request, fileDataStore *fileData.FileDataStore) {
+	path := utils.UrlCleaner(r.URL.Path)
+	path = strings.ReplaceAll(path, "/", "_")
+
+	log.Info("path: %q", path)
+
+	retrieveFile(w, path, fileDataStore)
 }
 
 func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<- bool) {
@@ -122,6 +128,14 @@ func disconnectHandler(w http.ResponseWriter, myAddr net.Addr, peerMap *p2pNetwo
 	fmt.Fprintf(w, "disconnecting from p2p network")
 }
 
+func filesHandler(w http.ResponseWriter, fileDataStore *fileData.FileDataStore) {
+	fileDataStore.Mutex.RLock()
+	for key, _ := range fileDataStore.Data {
+		fmt.Fprintf(w, "%s\n", key)
+	}
+	fileDataStore.Mutex.RUnlock()
+}
+
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)
 
@@ -134,4 +148,34 @@ func getPathParam(fromUrl *url.URL) (string, error) {
 	}
 
 	return "", fmt.Errorf("request has no path param")
+}
+
+func retrieveFile(w http.ResponseWriter, cleanUrl string, fileData *fileData.FileDataStore) {
+
+	if fileData.HasFileStored(cleanUrl) {
+		metadata := fileData.RetrieveFileData(cleanUrl)
+
+		file, openErr := os.Open(metadata.FileLoc)
+
+		if openErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "server couldn't open file for: %q", cleanUrl)
+			log.Error("couldn't open file %q: %s", metadata.FileLoc, openErr)
+			return
+		}
+
+		_, fileErr := file.WriteTo(w)
+
+		if fileErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Error("couldn't read file %q: %s", metadata.FileLoc, fileErr)
+			return
+		}
+
+		w.Header().Add("Content-Type", metadata.FileType)
+	} else {
+		// TODO: Ask other hosts on the network if they have it.
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "server has no resource associated with path: %q", cleanUrl)
+	}
 }

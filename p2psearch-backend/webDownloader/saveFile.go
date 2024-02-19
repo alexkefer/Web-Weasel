@@ -4,7 +4,6 @@ package webDownloader
 
 import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
-	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"os"
@@ -13,13 +12,13 @@ import (
 )
 
 func savePage(content []byte, url string, fileType string, fileDataStore *fileData.FileDataStore) {
-	urlClean := urlCleaner(url)
-	fileExt := fileTypes.GetFileExtension(fileType)
+	urlClean := utils.UrlCleaner(url)
+	//fileExt := fileTypes.GetFileExtension(fileType)
 
 	urlClean = strings.ReplaceAll(urlClean, "/", "_")
 
 	saveLocation, err2 := utils.GetCachePath()
-	fullSaveLocation := filepath.Join(saveLocation, urlClean+fileExt)
+	fullSaveLocation := filepath.Join(saveLocation, urlClean)
 	log.Info("saving asset: %s : %s : %s", url, fullSaveLocation)
 
 	if err2 != nil {
@@ -49,6 +48,6 @@ func savePage(content []byte, url string, fileType string, fileDataStore *fileDa
 		log.Info("successfully saved file")
 	}
 
-	metadata := fileData.CreateFileData(url, fullSaveLocation, fileType)
+	metadata := fileData.CreateFileData(urlClean, fullSaveLocation, fileType)
 	fileDataStore.StoreFileData(metadata)
 }

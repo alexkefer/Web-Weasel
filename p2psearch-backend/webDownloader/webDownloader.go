@@ -9,6 +9,7 @@ import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"io"
 	"net/http"
 )
@@ -19,7 +20,7 @@ func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) e
 		log.Warn("error downloading page: %s", err)
 		return err
 	}
-	err2 := downloadAllAssets(parseSourceLocation(url), pageHtml, fileDataStore)
+	err2 := downloadAllAssets(utils.ParseSourceLocation(url), pageHtml, fileDataStore)
 	if err2 != nil {
 		log.Warn("error downloading assets: %s", err2)
 		return err2

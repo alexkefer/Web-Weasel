@@ -24,33 +24,33 @@ func CreateFileData(url string, fileLoc string, fileType string) FileData {
 }
 
 type FileDataStore struct {
-	mutex sync.RWMutex
-	data  map[string]FileData
+	Mutex sync.RWMutex
+	Data  map[string]FileData
 }
 
 func CreateFileDataStore() FileDataStore {
 	return FileDataStore{
-		mutex: sync.RWMutex{},
-		data:  make(map[string]FileData),
+		Mutex: sync.RWMutex{},
+		Data:  make(map[string]FileData),
 	}
 }
 
 func (store *FileDataStore) HasFileStored(path string) bool {
-	store.mutex.RLock()
-	_, hasFile := store.data[path]
-	store.mutex.RUnlock()
+	store.Mutex.RLock()
+	_, hasFile := store.Data[path]
+	store.Mutex.RUnlock()
 	return hasFile
 }
 
 func (store *FileDataStore) RetrieveFileData(path string) FileData {
-	store.mutex.RLock()
-	fileData, _ := store.data[path]
-	store.mutex.RUnlock()
+	store.Mutex.RLock()
+	fileData, _ := store.Data[path]
+	store.Mutex.RUnlock()
 	return fileData
 }
 
 func (store *FileDataStore) StoreFileData(fileData FileData) {
-	store.mutex.Lock()
-	store.data[fileData.Url] = fileData
-	store.mutex.Unlock()
+	store.Mutex.Lock()
+	store.Data[fileData.Url] = fileData
+	store.Mutex.Unlock()
 }

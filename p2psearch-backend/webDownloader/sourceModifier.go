@@ -2,7 +2,10 @@
 
 package webDownloader
 
-import "regexp"
+import (
+	"github.com/alexkefer/p2psearch-backend/utils"
+	"regexp"
+)
 
 func regexHtml(html string, baseURL string) string {
 	// regex through the html and modify the locations to where they are downloaded rather than their links
@@ -18,7 +21,7 @@ func regexHtml(html string, baseURL string) string {
 			url := cssURL[1]
 
 			//Modify URL if need be
-			updatedURL := buildURL(baseURL, url)
+			updatedURL := utils.BuildURL(baseURL, url)
 
 			return "url(" + updatedURL + ")"
 		}

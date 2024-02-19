@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/fileTypes"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"golang.org/x/net/html"
 	"io"
 	"net/http"
@@ -26,7 +27,7 @@ func downloadAllAssets(baseURL, htmlContent string, fileDataStore *fileData.File
 				for _, attr := range token.Attr {
 					if attr.Key == "rel" && strings.Contains(attr.Val, "stylesheet") {
 						if href, ok := getAttributeValue(token, "href"); ok {
-							cssURL := buildURL(baseURL, href)
+							cssURL := utils.BuildURL(baseURL, href)
 							DownloadCSS(cssURL, fileDataStore)
 						}
 					}
@@ -35,7 +36,7 @@ func downloadAllAssets(baseURL, htmlContent string, fileDataStore *fileData.File
 				for _, attr := range token.Attr {
 					if attr.Key == "src" {
 						if src, ok := getAttributeValue(token, "src"); ok {
-							jsURL := buildURL(baseURL, src)
+							jsURL := utils.BuildURL(baseURL, src)
 							DownloadJS(jsURL, fileDataStore)
 						}
 					}
@@ -95,14 +96,14 @@ func DownloadJS(url string, fileDataStore *fileData.FileDataStore) {
 // Downloads various assets given the url
 func downloadAsset(baseURL, url string, fileDataStore *fileData.FileDataStore) {
 	println("downloading asset: " + url + " " + baseURL)
-	resp, err := http.Get(buildURL(baseURL, url))
+	resp, err := http.Get(utils.BuildURL(baseURL, url))
 	if err != nil {
-		println("Cannot access asset: " + buildURL(baseURL, url) + " " + err.Error())
+		println("Cannot access asset: " + utils.BuildURL(baseURL, url) + " " + err.Error())
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {
-			fmt.Println("Asset not found " + buildURL(baseURL, url))
+			fmt.Println("Asset not found " + utils.BuildURL(baseURL, url))
 		}
 		println("error getting url:" + string(rune(resp.StatusCode)))
 	}

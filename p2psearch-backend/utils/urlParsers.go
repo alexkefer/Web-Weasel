@@ -1,10 +1,10 @@
 /* Utility functions to parse various file information out of the URL */
 
-package webDownloader
+package utils
 
 import "strings"
 
-func urlCleaner(url string) string {
+func UrlCleaner(url string) string {
 	// takes in url and returns the cleaned url (removes http(s):// and www.)
 	if len(url) >= 8 && url[:8] == "https://" {
 		url = url[8:]
@@ -18,10 +18,13 @@ func urlCleaner(url string) string {
 	if url[len(url)-1] == '/' {
 		url = url[:len(url)-1]
 	}
+	if url[0] == '/' {
+		url = url[1:]
+	}
 	return url
 }
 
-func parseSourceLocation(url string) string {
+func ParseSourceLocation(url string) string {
 	// takes in url and returns the location of the source website (for assets)
 	i := 0
 	if len(url) >= 8 && url[:8] == "https://" {
@@ -39,7 +42,7 @@ func parseSourceLocation(url string) string {
 	return url
 }
 
-func parsePageLocation(url string) string {
+func ParsePageLocation(url string) string {
 	// takes in url and returns the location of the page
 	for i := len(url) - 1; i >= 0; i-- {
 		if url[i] == '/' {
@@ -47,10 +50,10 @@ func parsePageLocation(url string) string {
 			break
 		}
 	}
-	return "savedPages/" + urlCleaner(url)
+	return "savedPages/" + UrlCleaner(url)
 }
 
-func parsePageName(url string) string {
+func ParsePageName(url string) string {
 	// takes in url and returns the name of the page
 	for i := len(url) - 1; i >= 0; i-- {
 		if url[i] == '/' {
@@ -61,7 +64,7 @@ func parsePageName(url string) string {
 	return url
 }
 
-func buildURL(baseURL, assetURL string) string {
+func BuildURL(baseURL, assetURL string) string {
 	// takes in a base url and an asset url and returns the full url
 	if strings.HasPrefix(assetURL, "http") || strings.HasPrefix(assetURL, "https") {
 		return assetURL
@@ -70,6 +73,6 @@ func buildURL(baseURL, assetURL string) string {
 	} else if strings.HasPrefix(assetURL, "//") {
 		return "https:" + assetURL
 	} else {
-		return baseURL + "/" + urlCleaner(assetURL)
+		return baseURL + "/" + UrlCleaner(assetURL)
 	}
 }

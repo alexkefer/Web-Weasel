@@ -10,7 +10,9 @@ import (
 )
 
 func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
-	http.HandleFunc("/", defaultHandler)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		defaultHandler(w, r, fileDataStore)
+	})
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		shutdownHandler(w, r, shutdownChan)
@@ -34,6 +36,10 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataSt
 
 	http.HandleFunc("/disconnect", func(w http.ResponseWriter, r *http.Request) {
 		disconnectHandler(w, myAddr, peerMap)
+	})
+
+	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
+		filesHandler(w, fileDataStore)
 	})
 
 	port, _ := utils.FindOpenPort(8080, 8180)
