@@ -6,7 +6,6 @@ import "strings"
 
 func urlCleaner(url string) string {
 	// takes in url and returns the cleaned url (removes http(s):// and www.)
-	println(url)
 	if len(url) >= 8 && url[:8] == "https://" {
 		url = url[8:]
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
+	"github.com/alexkefer/p2psearch-backend/webDownloader"
 	"html"
 	"net"
 	"net/http"
@@ -28,15 +29,20 @@ func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pNetwork.Pe
 	peerMap.Mutex.RUnlock()
 }
 
-func storeFileHandler(w http.ResponseWriter, r *http.Request) {
+func cacheFileHandler(w http.ResponseWriter, r *http.Request) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error storing file: %s", err)
+		log.Warn("error caching file: %s", err)
+		fmt.Fprintf(w, "error caching file: %s", err)
 	} else {
-		// TODO
-		fmt.Fprintf(w, "Server is storing file found at %q", path)
+		err = webDownloader.BuildDownloadedWebpage(path)
+		if err == nil {
+			fmt.Fprintf(w, "server cached resource found at %q", path)
+		} else {
+			fmt.Fprintf(w, "server failed to cache resource: %s", err)
+		}
 	}
 }
 

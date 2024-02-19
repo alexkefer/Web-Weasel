@@ -20,8 +20,8 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileData *fileData.FileDataStore, 
 		peersHandler(w, r, peerMap)
 	})
 
-	http.HandleFunc("/store", func(w http.ResponseWriter, r *http.Request) {
-		storeFileHandler(w, r)
+	http.HandleFunc("/cache", func(w http.ResponseWriter, r *http.Request) {
+		cacheFileHandler(w, r)
 	})
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
