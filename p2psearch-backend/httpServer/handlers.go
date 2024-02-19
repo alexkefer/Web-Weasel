@@ -10,15 +10,17 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.String()))
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprintf(w, "bad request")
 }
 
 func shutdownHandler(w http.ResponseWriter, r *http.Request, shutdownChan chan<- bool) {
 	shutdownChan <- true
-	fmt.Fprintf(w, "Shutting down server...")
+	fmt.Fprintf(w, "shutting down server...")
 }
 
 func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pNetwork.PeerMap) {
@@ -29,7 +31,7 @@ func peersHandler(w http.ResponseWriter, r *http.Request, peerMap *p2pNetwork.Pe
 	peerMap.Mutex.RUnlock()
 }
 
-func cacheFileHandler(w http.ResponseWriter, r *http.Request) {
+func cacheFileHandler(w http.ResponseWriter, r *http.Request, fileDataStore *fileData.FileDataStore) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
@@ -37,7 +39,7 @@ func cacheFileHandler(w http.ResponseWriter, r *http.Request) {
 		log.Warn("error caching file: %s", err)
 		fmt.Fprintf(w, "error caching file: %s", err)
 	} else {
-		err = webDownloader.BuildDownloadedWebpage(path)
+		err = webDownloader.BuildDownloadedWebpage(path, fileDataStore)
 		if err == nil {
 			fmt.Fprintf(w, "server cached resource found at %q", path)
 		} else {
@@ -56,11 +58,30 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 	}
 
 	if fileData.HasFileStored(path) {
-		// TODO
+		metadata := fileData.RetrieveFileData(path)
+
+		file, openErr := os.Open(metadata.FileLoc)
+
+		if openErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "server couldn't open file for: %q", path)
+			log.Error("couldn't open file %q: %s", metadata.FileLoc, openErr)
+			return
+		}
+
+		_, fileErr := file.WriteTo(w)
+
+		if fileErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Error("couldn't read file %q: %s", metadata.FileLoc, fileErr)
+			return
+		}
+
+		w.Header().Add("Content-Type", metadata.FileType)
 	} else {
 		// TODO: Ask other hosts on the network if they have it.
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "Server has no resource associated with path: %q", path)
+		fmt.Fprintf(w, "server has no resource associated with path: %q", path)
 	}
 }
 

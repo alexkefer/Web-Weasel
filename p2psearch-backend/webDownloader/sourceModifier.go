@@ -4,7 +4,7 @@ package webDownloader
 
 import "regexp"
 
-func regexHtml(html string, baseURL string, localPath string) string {
+func regexHtml(html string, baseURL string) string {
 	// regex through the html and modify the locations to where they are downloaded rather than their links
 	//Expression Pattern
 	cssURLs := regexp.MustCompile(`url\(['"]?(.*?)['"]?\)`)

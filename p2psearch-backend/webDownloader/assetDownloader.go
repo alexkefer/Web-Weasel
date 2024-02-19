@@ -4,13 +4,15 @@ package webDownloader
 
 import (
 	"fmt"
+	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"golang.org/x/net/html"
 	"io"
 	"net/http"
 	"strings"
 )
 
-func downloadAllAssets(baseURL, htmlContent string) error {
+func downloadAllAssets(baseURL, htmlContent string, fileDataStore *fileData.FileDataStore) error {
 	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
 	for {
 		tokenType := tokenizer.Next()
@@ -25,7 +27,7 @@ func downloadAllAssets(baseURL, htmlContent string) error {
 					if attr.Key == "rel" && strings.Contains(attr.Val, "stylesheet") {
 						if href, ok := getAttributeValue(token, "href"); ok {
 							cssURL := buildURL(baseURL, href)
-							DownloadCSS(cssURL)
+							DownloadCSS(cssURL, fileDataStore)
 						}
 					}
 				}
@@ -34,7 +36,7 @@ func downloadAllAssets(baseURL, htmlContent string) error {
 					if attr.Key == "src" {
 						if src, ok := getAttributeValue(token, "src"); ok {
 							jsURL := buildURL(baseURL, src)
-							DownloadJS(jsURL)
+							DownloadJS(jsURL, fileDataStore)
 						}
 					}
 				}
@@ -43,7 +45,7 @@ func downloadAllAssets(baseURL, htmlContent string) error {
 					if attr.Key == "src" {
 						if src, ok := getAttributeValue(token, "src"); ok {
 							println("src: " + src)
-							downloadAsset(baseURL, src)
+							downloadAsset(baseURL, src, fileDataStore)
 						}
 					}
 				}
@@ -53,7 +55,7 @@ func downloadAllAssets(baseURL, htmlContent string) error {
 }
 
 // Downloads the css file given the url
-func DownloadCSS(url string) {
+func DownloadCSS(url string, fileDataStore *fileData.FileDataStore) {
 	// takes in url and returns the css file
 	resp, err := http.Get(url)
 	if err != nil {
@@ -68,11 +70,11 @@ func DownloadCSS(url string) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(string(data), url, ".css")
+	savePage(data, url, fileTypes.Css, fileDataStore)
 }
 
 // Downloads required js files
-func DownloadJS(url string) {
+func DownloadJS(url string, fileDataStore *fileData.FileDataStore) {
 	// takes in url and returns the js file
 	resp, err := http.Get(url)
 	if err != nil {
@@ -87,11 +89,11 @@ func DownloadJS(url string) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(string(data), url, ".js")
+	savePage(data, url, fileTypes.Javascript, fileDataStore)
 }
 
 // Downloads various assets given the url
-func downloadAsset(baseURL, url string) {
+func downloadAsset(baseURL, url string, fileDataStore *fileData.FileDataStore) {
 	println("downloading asset: " + url + " " + baseURL)
 	resp, err := http.Get(buildURL(baseURL, url))
 	if err != nil {
@@ -108,8 +110,7 @@ func downloadAsset(baseURL, url string) {
 	if err != nil {
 		panic(err)
 	}
-	content := string(data)
-	savePage(content, url, "")
+	savePage(data, url, "", fileDataStore)
 }
 
 /* Helper functions */

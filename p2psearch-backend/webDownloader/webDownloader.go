@@ -6,24 +6,26 @@ package webDownloader
 
 import (
 	"errors"
+	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"io"
 	"net/http"
 )
 
-func BuildDownloadedWebpage(url string) error {
+func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) error {
 	pageHtml, err := DownloadPage(url)
 	if err != nil {
 		log.Warn("error downloading page: %s", err)
 		return err
 	}
-	err2 := downloadAllAssets(parseSourceLocation(url), pageHtml)
+	err2 := downloadAllAssets(parseSourceLocation(url), pageHtml, fileDataStore)
 	if err2 != nil {
 		log.Warn("error downloading assets: %s", err2)
 		return err2
 	}
-	pageHtml = regexHtml(pageHtml, url, "savedPages/")
-	savePage(pageHtml, url, ".html")
+	pageHtml = regexHtml(pageHtml, url)
+	savePage([]byte(pageHtml), url, fileTypes.Html, fileDataStore)
 	log.Info("downloaded webpage at %s", url)
 	return nil
 }

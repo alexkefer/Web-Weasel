@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func StartServer(peerMap *p2pNetwork.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
-	http.HandleFunc("/", helloHandler)
+func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
+	http.HandleFunc("/", defaultHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		shutdownHandler(w, r, shutdownChan)
@@ -21,11 +21,11 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileData *fileData.FileDataStore, 
 	})
 
 	http.HandleFunc("/cache", func(w http.ResponseWriter, r *http.Request) {
-		cacheFileHandler(w, r)
+		cacheFileHandler(w, r, fileDataStore)
 	})
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
-		retrieveFileHandler(w, r, fileData)
+		retrieveFileHandler(w, r, fileDataStore)
 	})
 
 	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
