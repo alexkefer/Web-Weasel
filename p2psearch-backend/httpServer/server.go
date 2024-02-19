@@ -32,6 +32,10 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileData *fileData.FileDataStore, 
 		connectHandler(w, r, myAddr, peerMap)
 	})
 
+	http.HandleFunc("/disconnect", func(w http.ResponseWriter, r *http.Request) {
+		disconnectHandler(w, myAddr, peerMap)
+	})
+
 	port, _ := utils.FindOpenPort(8080, 8180)
 
 	log.Info("opening http server on port %s", port)

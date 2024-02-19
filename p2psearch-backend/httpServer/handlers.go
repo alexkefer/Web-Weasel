@@ -95,6 +95,12 @@ func connectHandler(w http.ResponseWriter, r *http.Request, myAddr net.Addr, pee
 	log.Info("sent add me request to: %s", targetAddr.String())
 }
 
+func disconnectHandler(w http.ResponseWriter, myAddr net.Addr, peerMap *p2pNetwork.PeerMap) {
+	log.Info("received http disconnect request")
+	p2pNetwork.Disconnect(myAddr, peerMap)
+	fmt.Fprintf(w, "disconnecting from p2p network")
+}
+
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)
 

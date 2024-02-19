@@ -23,7 +23,7 @@ func BuildDownloadedWebpage(url string) error {
 		return err2
 	}
 	pageHtml = regexHtml(pageHtml, url, "savedPages/")
-	savePage(pageHtml, url, "savedPages", ".html")
+	savePage(pageHtml, url, ".html")
 	log.Info("downloaded webpage at %s", url)
 	return nil
 }

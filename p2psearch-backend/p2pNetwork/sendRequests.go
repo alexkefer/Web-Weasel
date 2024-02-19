@@ -72,13 +72,14 @@ func sendAddMeRequestsToPeersOfPeer(from net.Addr, toPeersOf net.Addr, peerMap *
 	}
 }
 
-// Disconnect Sends RemoveMe requests to all peers
+// Disconnect Sends RemoveMe requests to all peers and remove them from peerMap
 func Disconnect(myAddr net.Addr, peerMap *PeerMap) {
 	log.Info("disconnecting from all peers")
 	peerMap.Mutex.RLock()
-	for _, peer := range peerMap.Peers {
+	for peerKey, peer := range peerMap.Peers {
 		if peer.Addr != myAddr {
 			sendRemoveMeRequest(myAddr, peer.Addr)
+			delete(peerMap.Peers, peerKey)
 		}
 	}
 	peerMap.Mutex.RUnlock()

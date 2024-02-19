@@ -68,7 +68,7 @@ func DownloadCSS(url string) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(string(data), url, "savedPages", ".css")
+	savePage(string(data), url, ".css")
 }
 
 // Downloads required js files
@@ -87,7 +87,7 @@ func DownloadJS(url string) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(string(data), url, "savedPages", ".js")
+	savePage(string(data), url, ".js")
 }
 
 // Downloads various assets given the url
@@ -109,7 +109,7 @@ func downloadAsset(baseURL, url string) {
 		panic(err)
 	}
 	content := string(data)
-	savePage(content, url, "savedPages", "")
+	savePage(content, url, "")
 }
 
 /* Helper functions */
