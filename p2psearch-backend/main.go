@@ -35,7 +35,9 @@ func main() {
 	myPeer := p2pNetwork.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
-	go p2pNetwork.StartServer(myAddr, &peerMap)
+	fileDataStore := fileData.CreateFileDataStore()
+
+	go p2pNetwork.StartServer(myAddr, &peerMap, &fileDataStore)
 	log.Info("my address: %s", myAddr)
 	//addrChan <- myAddr
 
@@ -65,8 +67,6 @@ func main() {
 			exitChannel <- true
 		}
 	}()
-
-	fileDataStore := fileData.CreateFileDataStore()
 
 	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel, myAddr)
 

@@ -25,7 +25,7 @@ func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) e
 		return err2
 	}
 	pageHtml = regexHtml(pageHtml, url)
-	savePage([]byte(pageHtml), url, fileTypes.Html, fileDataStore)
+	SaveFile([]byte(pageHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
 	log.Info("downloaded webpage at %s", url)
 	return nil
 }

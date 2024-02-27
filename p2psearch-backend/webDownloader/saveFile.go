@@ -4,23 +4,16 @@ package webDownloader
 
 import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
-	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
-func savePage(content []byte, url string, fileType string, fileDataStore *fileData.FileDataStore) {
-	urlClean := urlCleaner(url)
-	fileExt := fileTypes.GetFileExtension(fileType)
-
-	urlClean = strings.ReplaceAll(urlClean, "/", "_")
-
+func SaveFile(content []byte, path string, fileType string, fileDataStore *fileData.FileDataStore) {
 	saveLocation, err2 := utils.GetCachePath()
-	fullSaveLocation := filepath.Join(saveLocation, urlClean+fileExt)
-	log.Info("saving asset: %s : %s : %s", url, fullSaveLocation)
+	fullSaveLocation := filepath.Join(saveLocation, path)
+	log.Info("saving asset: %s, %s", path, fullSaveLocation)
 
 	if err2 != nil {
 		log.Error("failed to save page: %s", err2)
@@ -45,10 +38,11 @@ func savePage(content []byte, url string, fileType string, fileDataStore *fileDa
 	_, err3 := file.Write(content)
 	if err3 != nil {
 		log.Error("error writing to file: %s", err3)
+		return
 	} else {
-		log.Info("successfully saved file")
+		log.Info("successfully saved file: %s", path)
 	}
 
-	metadata := fileData.CreateFileData(url, fullSaveLocation, fileType)
+	metadata := fileData.CreateFileData(path, fullSaveLocation, fileType)
 	fileDataStore.StoreFileData(metadata)
 }

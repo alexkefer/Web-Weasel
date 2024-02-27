@@ -1,11 +1,13 @@
 package p2pNetwork
 
 import (
+	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"net"
+	"os"
 )
 
-func StartServer(myAddr net.Addr, peerMap *PeerMap) {
+func StartServer(myAddr net.Addr, peerMap *PeerMap, files *fileData.FileDataStore) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
 	if listenErr != nil {
@@ -21,12 +23,12 @@ func StartServer(myAddr net.Addr, peerMap *PeerMap) {
 			log.Error("tcp connection error: %s", connErr)
 		} else {
 			// Here we create a separate goroutine (thread) to handle this connection
-			go HandleConnection(myAddr, conn, peerMap)
+			go HandleConnection(myAddr, conn, peerMap, files)
 		}
 	}
 }
 
-func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
+func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap, files *fileData.FileDataStore) {
 	message, messageErr := ReceiveMessage(conn)
 
 	if messageErr != nil {
@@ -74,10 +76,37 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap) {
 		peerMap.Mutex.RUnlock()
 
 	case BroadcastMessage:
-		log.Info("received broadcast message from %s: %s", message.SenderAddr, message.BroadcastMessage)
+		log.Info("received broadcast message from %s: %s", message.SenderAddr, message.Data)
 
 	case RemoveMeRequest:
 		peerMap.RemovePeer(message.SenderAddr)
+
+	case FileRequest:
+		path := string(message.Data)
+		log.Debug("peer %s is asking for file: %s", message.SenderAddr, path)
+
+		if files.HasFileStored(path) {
+			metadata := files.RetrieveFileData(path)
+			data, readErr := os.ReadFile(metadata.FileLoc)
+
+			if readErr != nil {
+				log.Error("could not read file: %s", readErr)
+				message = Message{Code: NoFileResponse, SenderAddr: myAddr.String()}
+			} else {
+				log.Debug("found requested file: %s", path)
+				message = Message{Code: HasFileResponse, SenderAddr: myAddr.String(), Data: data, DataType: metadata.FileType}
+			}
+
+		} else {
+			log.Warn("couldn't find requested file: %s", path)
+			message = Message{Code: NoFileResponse, SenderAddr: myAddr.String()}
+		}
+
+		sendErr := SendMessage(conn, message)
+
+		if sendErr != nil {
+			log.Warn("send message error: %s", sendErr)
+		}
 
 	default:
 		log.Warn("invalid code %d, closing connection", message.Code)

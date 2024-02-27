@@ -21,6 +21,12 @@ func urlCleaner(url string) string {
 	return url
 }
 
+func CleanUrl(url string) string {
+	url = urlCleaner(url)
+	url = strings.ReplaceAll(url, "/", "_")
+	return url
+}
+
 func parseSourceLocation(url string) string {
 	// takes in url and returns the location of the source website (for assets)
 	i := 0

@@ -1,7 +1,6 @@
 package p2pNetwork
 
 import (
-	"fmt"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
@@ -126,29 +125,36 @@ func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
 	}
 }
 
-func SendBroadcastMessage(to net.Addr, from net.Addr, messageText string) {
-
+func SendFileRequest(to net.Addr, from net.Addr, path string) (*Message, error) {
 	conn, connErr := utils.MakeTcpConnection(to)
 
 	if connErr != nil {
-		return
+		return nil, connErr
 	}
 
 	var message = Message{
-		Code:             BroadcastMessage,
-		SenderAddr:       from.String(),
-		BroadcastMessage: messageText,
+		Code:       FileRequest,
+		SenderAddr: from.String(),
+		Data:       []byte(path),
 	}
 
-	err := SendMessage(conn, message)
+	sendErr := SendMessage(conn, message)
 
-	if err != nil {
-		fmt.Println("error sending broadcast message:", err)
+	if sendErr != nil {
+		return nil, sendErr
+	}
+
+	message, recvErr := ReceiveMessage(conn)
+
+	if recvErr != nil {
+		return &message, recvErr
 	}
 
 	closeErr := conn.Close()
 
 	if closeErr != nil {
-		fmt.Println("error closing connection:", closeErr)
+		log.Warn("error closing connection: %s", closeErr)
 	}
+
+	return &message, nil
 }

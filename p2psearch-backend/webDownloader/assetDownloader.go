@@ -70,7 +70,7 @@ func DownloadCSS(url string, fileDataStore *fileData.FileDataStore) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(data, url, fileTypes.Css, fileDataStore)
+	SaveFile(data, CleanUrl(url), fileTypes.Css, fileDataStore)
 }
 
 // Downloads required js files
@@ -89,7 +89,7 @@ func DownloadJS(url string, fileDataStore *fileData.FileDataStore) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(data, url, fileTypes.Javascript, fileDataStore)
+	SaveFile(data, CleanUrl(url), fileTypes.Javascript, fileDataStore)
 }
 
 // Downloads various assets given the url
@@ -110,7 +110,7 @@ func downloadAsset(baseURL, url string, fileDataStore *fileData.FileDataStore) {
 	if err != nil {
 		panic(err)
 	}
-	savePage(data, url, "", fileDataStore)
+	SaveFile(data, CleanUrl(url), "", fileDataStore)
 }
 
 /* Helper functions */

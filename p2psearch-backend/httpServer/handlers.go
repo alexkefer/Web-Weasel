@@ -48,7 +48,7 @@ func cacheFileHandler(w http.ResponseWriter, r *http.Request, fileDataStore *fil
 	}
 }
 
-func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileData.FileDataStore) {
+func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileData.FileDataStore, peerMap *p2pNetwork.PeerMap, myAddr net.Addr) {
 	path, err := getPathParam(r.URL)
 
 	if err != nil {
@@ -57,14 +57,16 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 		return
 	}
 
-	if fileData.HasFileStored(path) {
-		metadata := fileData.RetrieveFileData(path)
+	pathClean := webDownloader.CleanUrl(path)
+
+	if fileData.HasFileStored(pathClean) {
+		metadata := fileData.RetrieveFileData(pathClean)
 
 		file, openErr := os.Open(metadata.FileLoc)
 
 		if openErr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "server couldn't open file for: %q", path)
+			fmt.Fprintf(w, "server couldn't open file for: %q", pathClean)
 			log.Error("couldn't open file %q: %s", metadata.FileLoc, openErr)
 			return
 		}
@@ -79,9 +81,66 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 
 		w.Header().Add("Content-Type", metadata.FileType)
 	} else {
-		// TODO: Ask other hosts on the network if they have it.
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "server has no resource associated with path: %q", path)
+		log.Info("server had no file for %s", pathClean)
+
+		// Ask other hosts on the network if they have it.
+		channel := make(chan *p2pNetwork.Message)
+		counter := 0
+		peerMap.Mutex.RLock()
+		for key, peer := range peerMap.Peers {
+			if peer.Addr != myAddr {
+				counter += 1
+				go func() {
+					log.Debug("asking %s for file: %s", key, pathClean)
+					message, fileReqErr := p2pNetwork.SendFileRequest(peer.Addr, myAddr, pathClean)
+					if fileReqErr == nil {
+						channel <- message
+					} else {
+						channel <- nil
+					}
+				}()
+			}
+		}
+		peerMap.Mutex.RUnlock()
+
+		for i := 0; i < counter; i++ {
+			message := <-channel
+			if message != nil {
+				log.Debug("got %d response from %s", message.Code, message.SenderAddr)
+				if message.Code == p2pNetwork.HasFileResponse {
+					log.Debug("got %s from peer", pathClean)
+					webDownloader.SaveFile(message.Data, pathClean, message.DataType, fileData)
+				}
+			}
+		}
+
+		if fileData.HasFileStored(pathClean) {
+			metadata := fileData.RetrieveFileData(pathClean)
+
+			file, openErr := os.Open(metadata.FileLoc)
+
+			if openErr != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "server couldn't open file for: %q", pathClean)
+				log.Error("couldn't open file %q: %s", metadata.FileLoc, openErr)
+				return
+			}
+
+			_, fileErr := file.WriteTo(w)
+
+			if fileErr != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				log.Error("couldn't read file %q: %s", metadata.FileLoc, fileErr)
+				return
+			}
+
+			w.Header().Add("Content-Type", metadata.FileType)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			log.Warn("couldn't find file on network: %s", pathClean)
+			fmt.Fprintf(w, "network has no resource associated with path: %q", pathClean)
+			return
+		}
 	}
 }
 

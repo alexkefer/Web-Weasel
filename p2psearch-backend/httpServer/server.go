@@ -25,7 +25,7 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataSt
 	})
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
-		retrieveFileHandler(w, r, fileDataStore)
+		retrieveFileHandler(w, r, fileDataStore, peerMap, myAddr)
 	})
 
 	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
