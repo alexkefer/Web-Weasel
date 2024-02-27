@@ -1,8 +1,9 @@
 package p2pNetwork
 
 import (
-	"encoding/json"
+	"encoding/gob"
 	"github.com/alexkefer/p2psearch-backend/log"
+	"io"
 	"net"
 )
 
@@ -13,24 +14,24 @@ type Message struct {
 	BroadcastMessage string
 }
 
-func ReceiveMessage(conn net.Conn) (Message, error) {
-	decoder := json.NewDecoder(conn)
+func ReceiveMessage(r io.Reader) (Message, error) {
+	decoder := gob.NewDecoder(r)
 
 	var message Message
 
 	err := decoder.Decode(&message)
 	if err != nil {
-		log.Error("failed receiving p2p message:", err)
+		log.Error("failed receiving p2p message: %s", err)
 	}
 	return message, err
 }
 
-func SendMessage(conn net.Conn, message Message) error {
-	encoder := json.NewEncoder(conn)
+func SendMessage(w io.Writer, message Message) error {
+	encoder := gob.NewEncoder(w)
 	err := encoder.Encode(message)
 
 	if err != nil {
-		log.Error("failed sending p2p message:", err)
+		log.Error("failed sending p2p message: %s", err)
 	}
 
 	return err
