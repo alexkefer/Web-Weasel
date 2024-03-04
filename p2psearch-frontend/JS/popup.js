@@ -1,42 +1,36 @@
 document.addEventListener('DOMContentLoaded', function () {
-  // Get the iconButton element
   var iconButton = document.getElementById('iconButton');
-
-  // Add a click event listener to the iconButton
   iconButton.addEventListener('click', function () {
-    // Get the icon-img element
     var iconImg = document.querySelector('.icon-img');
-
-    // Toggle between on_power_icon.png and off_power_icon.png based on the current src
     iconImg.src = (iconImg.src.includes('on_power_icon.png')) ? '../images/off_power_icon.png' : '../images/on_power_icon.png';
-
-    // Toggle visibility of device information based on the icon state
-    toggleDeviceInfoVisibility(iconImg.src.includes('on_power_icon.png'));
+    
+    // Make a request to the backend server when the icon is clicked
+    fetch('http://192.168.86.62/backend-endpoint') // Replace '/backend-endpoint' with the actual endpoint on your backend server
+      .then(response => response.json())
+      .then(data => {
+        // Do something with the data received from the backend
+        console.log(data);
+        // Toggle visibility of device information based on the icon state and the data received from the server
+        toggleDeviceInfoVisibility(iconImg.src.includes('on_power_icon.png'), data);
+      })
+      .catch(error => console.error('Error:', error));
   });
 
-  // Initial setup to display randomly generated information
-  toggleDeviceInfoVisibility(true);
+  toggleDeviceInfoVisibility(true); // Initial setup to display randomly generated information
 });
 
-// Function to toggle visibility of device information
-function toggleDeviceInfoVisibility(isIconOn) {
+function toggleDeviceInfoVisibility(isIconOn, data) {
   const publicDeviceNameSpan = document.querySelector('.device-info-text');
   const ipAddressSpan = document.querySelector('.ip-adr-text');
   const nearestNodeSpan = document.querySelector('.neighbor-ip-text');
 
-  if (isIconOn) {
-    // Display random device name
-    publicDeviceNameSpan.textContent = "Public Device Name: " + generateRandomName();
-    // Display random IP address (for illustration purposes)
-    ipAddressSpan.textContent = "Node IP Address: " + generateRandomIP();
-    // Display random nearest connection node (for illustration purposes)
-    nearestNodeSpan.textContent = "Nearest Connection Node: " + generateRandomNode();
+  if (isIconOn && data) {
+    publicDeviceNameSpan.textContent = "Public Device Name: " + data.deviceName;
+    ipAddressSpan.textContent = "Node IP Address: " + data.ipAddress;
+    nearestNodeSpan.textContent = "Nearest Connection Node: " + data.nearestNode;
   } else {
-    // Clear random device name
     publicDeviceNameSpan.textContent = "Public Device Name: ";
-    // Clear random IP address (for illustration purposes)
     ipAddressSpan.textContent = "Node IP Address: ";
-    // Clear random nearest connection node (for illustration purposes)
     nearestNodeSpan.textContent = "Nearest Connection Node: ";
   }
 }
