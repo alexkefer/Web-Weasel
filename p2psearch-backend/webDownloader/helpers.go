@@ -55,21 +55,21 @@ func parsePageName(url string) string {
 }
 
 // Function to build the local path for the asset, removes http, https, and www and places the asset in the correct location
-func buildLocalPath(baseURL, assetURL string) string {
+func buildLocalPath(url string) string {
 	// takes in a base url and an asset url and returns the full url
-	if strings.HasPrefix(assetURL, "http://") || strings.HasPrefix(assetURL, "https://") {
-		assetURL = assetURL[8:]
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		url = url[8:]
 	}
-	if strings.HasPrefix(assetURL, "www.") {
-		assetURL = assetURL[4:]
+	if strings.HasPrefix(url, "www.") {
+		url = url[4:]
 	}
-	if strings.HasPrefix(assetURL, "//") {
-		assetURL = assetURL[2:]
+	if strings.HasPrefix(url, "//") {
+		url = url[2:]
 	}
-	if strings.HasPrefix(assetURL, "/") {
-		assetURL = assetURL[1:]
+	if strings.HasPrefix(url, "/") {
+		url = url[1:]
 	}
-	return baseURL + "/" + assetURL
+	return "/retrieve?path=" + url
 }
 
 func determineAssetType(url string) string {

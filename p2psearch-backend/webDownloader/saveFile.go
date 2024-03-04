@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 )
 
-func SaveFile(content []byte, path string, fileType string, fileDataStore *fileData.FileDataStore) {
+func SaveFile(content []byte, filename string, fileType string, fileDataStore *fileData.FileDataStore) {
 	saveLocation, err2 := utils.GetCachePath()
-	fullSaveLocation := filepath.Join(saveLocation, path)
-	log.Info("saving asset: %s, %s", path, fullSaveLocation)
+	fullSaveLocation := filepath.Join(saveLocation, filename)
+	log.Info("saving asset: %s, %s", filename, fullSaveLocation)
 
 	if err2 != nil {
 		log.Error("failed to save page: %s", err2)
@@ -40,9 +40,9 @@ func SaveFile(content []byte, path string, fileType string, fileDataStore *fileD
 		log.Error("error writing to file: %s", err3)
 		return
 	} else {
-		log.Info("successfully saved file: %s", path)
+		log.Info("successfully saved file: %s", filename)
 	}
 
-	metadata := fileData.CreateFileData(path, fullSaveLocation, fileType)
+	metadata := fileData.CreateFileData(filename, fullSaveLocation, fileType)
 	fileDataStore.StoreFileData(metadata)
 }

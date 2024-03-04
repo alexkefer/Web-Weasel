@@ -16,3 +16,4 @@ func GetFileExtension(fileType string) string {
 const Html = "text/html"
 const Css = "text/css"
 const Javascript = "application/javascript"
+const Image = "img"

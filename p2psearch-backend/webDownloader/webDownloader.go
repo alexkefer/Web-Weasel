@@ -19,8 +19,8 @@ func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) e
 		log.Warn("error downloading page: %s", err)
 		return err
 	}
-	html := DownloadAllAssets(parseSourceLocation(url), pageHtml)
-	SaveFile([]byte(html), CleanUrl(url), fileTypes.Html, fileDataStore)
+	modifiedHtml := DownloadAllAssets(url, pageHtml, fileDataStore)
+	SaveFile([]byte(modifiedHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
 	log.Info("downloaded webpage at %s", url)
 	return nil
 }

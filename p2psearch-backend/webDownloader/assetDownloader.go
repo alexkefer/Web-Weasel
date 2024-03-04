@@ -3,6 +3,7 @@
 package webDownloader
 
 import (
+	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"golang.org/x/net/html"
 	"io"
@@ -35,7 +36,7 @@ func findAssets(html string) [][]string {
 	return regex.FindAllStringSubmatch(html, -1)
 }*/
 
-func retrieveAsset(url string) string {
+func retrieveAsset(url string) ([]byte, string) {
 	// takes in the url and returns the asset
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", "P2PWebCache")
@@ -44,28 +45,34 @@ func retrieveAsset(url string) string {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error("error downloading asset:", url, err)
-		return ""
+		return nil, ""
 	}
+
+	contentType := resp.Header.Get("Content-Type")
+
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error("error reading asset content:", err)
-		return ""
+		return nil, contentType
 	}
-	return string(body)
+	return body, contentType
 }
 
-func DownloadAllAssets(url, htmlContent string) string {
+func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStore) string {
 	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
+	modifiedHtml := ""
+
 	for {
 		tokenType := tokenizer.Next()
 		switch tokenType {
 		case html.ErrorToken:
-			return htmlContent
+			return modifiedHtml
 		case html.StartTagToken, html.SelfClosingTagToken:
 			token := tokenizer.Token()
 			switch token.Data {
 			case "link": // Download CSS
+				// TODO: Fix attr editing for this case
 				for _, attr := range token.Attr {
 					if href, ok := getAttributeValue(token, "href"); ok {
 						switch detectAssetType(href) {
@@ -73,40 +80,31 @@ func DownloadAllAssets(url, htmlContent string) string {
 							println(href)
 							link := buildPageUrl(url, href)
 							log.Debug("retrieving Asset: " + link)
-							assetInfo := retrieveAsset(link)
-							if assetInfo != "" {
-								makeFileLocation("savedPages/" + parsePageLocation(link))
+							content, contentType := retrieveAsset(link)
+							if content != nil {
 								href = trimLongURL(href)
-								var fileType string
-								if strings.HasSuffix(href, ".css") {
-									fileType = ""
-								} else {
-									fileType = ".css"
-								}
-								saveAsset(assetInfo, parsePageName(href), parsePageLocation(link), fileType)
-								attr.Val = buildLocalPath(parsePageLocation(url), parsePageName(href)+fileType)
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
 							}
 						case "img":
 							println("img")
 							link := buildPageUrl(url, href)
 							log.Info("retrieving Asset: " + link)
-							assetInfo := retrieveAsset(link)
-							if assetInfo != "" {
-								makeFileLocation("savedPages/" + parsePageLocation(link))
+							content, contentType := retrieveAsset(link)
+							if content != nil {
 								href = trimLongURL(href)
-								saveAsset(assetInfo, parsePageName(href), parsePageLocation(link), "")
-								attr.Val = buildLocalPath(parsePageLocation(url), parsePageName(href)+"")
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
 							}
 						case "php":
 							println(href)
 							link := buildPageUrl(url, href)
 							log.Info("retrieving Asset: " + link)
-							assetInfo := retrieveAsset(link)
-							if assetInfo != "" {
-								makeFileLocation("savedPages/" + parsePageLocation(link))
+							content, contentType := retrieveAsset(link)
+							if content != nil {
 								href = trimLongURL(href)
-								saveAsset(assetInfo, parsePageName(href), parsePageLocation(link), "")
-								attr.Val = buildLocalPath(parsePageLocation(url), parsePageName(href)+"")
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
 							}
 						case "js":
 							println("js")
@@ -114,38 +112,38 @@ func DownloadAllAssets(url, htmlContent string) string {
 					}
 				}
 			case "script": // Download JS
-				for _, attr := range token.Attr {
+				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						link := buildPageUrl(url, attr.Val)
+						link := url + attr.Val
 						log.Info("retrieving Asset: " + link)
-						assetInfo := retrieveAsset(link)
-						if assetInfo != "" {
-							makeFileLocation("savedPages/" + parsePageLocation(link))
-							var fileType string
-							if strings.HasSuffix(link, ".js") {
-								fileType = ""
-							} else {
-								fileType = ".js"
-							}
-							saveAsset(assetInfo, parsePageName(attr.Val), parsePageLocation(link), fileType)
-							attr.Val = buildLocalPath(parsePageLocation(url), parsePageName(attr.Val)+fileType)
+						content, contentType := retrieveAsset(link)
+						if content != nil {
+							SaveFile(content, CleanUrl(link), contentType, fileStore)
+							attr.Val = buildLocalPath(link)
+							token.Attr[i] = attr
 						}
 					}
 				}
 			case "img": // Download Images
-				for _, attr := range token.Attr {
+				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						link := buildPageUrl(url, attr.Val)
+						link := url + attr.Val
 						log.Info("retrieving Asset: " + link)
-						assetInfo := retrieveAsset(link)
-						if assetInfo != "" {
-							makeFileLocation("savedPages/" + parsePageLocation(link))
-							saveAsset(assetInfo, parsePageName(attr.Val), parsePageLocation(link), "")
-							attr.Val = buildLocalPath(parsePageLocation(url), parsePageName(attr.Val)+"")
+						content, contentType := retrieveAsset(link)
+						if content != nil {
+							SaveFile(content, CleanUrl(link), contentType, fileStore)
+							attr.Val = buildLocalPath(link)
+							token.Attr[i] = attr
 						}
 					}
 				}
 			}
+
+			modifiedHtml += html.UnescapeString(token.String())
+
+		default:
+			token := tokenizer.Token()
+			modifiedHtml += html.UnescapeString(token.String())
 		}
 	}
 }
