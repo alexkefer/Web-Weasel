@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', function () {
     iconImg.src = (iconImg.src.includes('on_power_icon.png')) ? '../images/off_power_icon.png' : '../images/on_power_icon.png';
     
     // Make a request to the backend server when the icon is clicked
-    fetch('http://192.168.86.62/backend-endpoint') // Replace '/backend-endpoint' with the actual endpoint on your backend server
+    fetch('http://localhost:8080/backend-endpoint') // Modify the URL to match your Go server
       .then(response => response.json())
       .then(data => {
-        // Do something with the data received from the backend
-        console.log(data);
+        // Log the received data to check if it includes the IP address
+        console.log("Received data:", data);
         // Toggle visibility of device information based on the icon state and the data received from the server
         toggleDeviceInfoVisibility(iconImg.src.includes('on_power_icon.png'), data);
       })
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   toggleDeviceInfoVisibility(true); // Initial setup to display randomly generated information
 });
+
 
 function toggleDeviceInfoVisibility(isIconOn, data) {
   const publicDeviceNameSpan = document.querySelector('.device-info-text');
