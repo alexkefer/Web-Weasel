@@ -4,30 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../CSS/webpage_style.css">
-    <title>File Download Example</title>
+    <title>Peer-to-Peer Web Cache</title>
 </head>
 <body>
     <header>
-        <div id="hamburger" class="collapsed" onclick="toggleSidebar()"> <!-- Add 'collapsed' class to the hamburger button -->
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-        </div>
-        <h1>File Download Example</h1>
-        
+        <h1>Peer-to-Peer Web Cache</h1>
     </header>
 
     <main>
-        <aside id="sidebar" class="collapsed"> <!-- Add 'collapsed' class to the sidebar -->
-            <!-- Add other sidebar content here -->
-            <div class="sidebar-item" onclick="download()">Downloaded</div>
-            <div class="sidebar-item" onclick="resource()">Resource</div>
-            <div class="sidebar-item" onclick="openSettings()">Settings</div>
+        <aside id="sidebar">
+            <a href="webpage.html" class="sidebar-item">Home</a>
+            <a href="downloads.html" class="sidebar-item">Downloads</a>
+            <a href="settings.html" class="sidebar-item">Settings</a>
+            <a href="resources.html" class="sidebar-item">Resources</a>
         </aside>
 
-        <ul id="fileList" class="file-list"></ul>
+        <section class="content-section">
+            <h2>Welcome to Peer-to-Peer Web Cache</h2>
+            <p>This web application allows you to create a decentralized web cache network with your peers.</p>
+            <h3>Features:</h3>
+            <ul>
+                <li>Decentralized caching of web content</li>
+                <li>Reduced bandwidth usage by sharing cached content with peers</li>
+                <li>Improved access speed to frequently visited websites</li>
+                <li>User-friendly interface for managing cache settings</li>
+            </ul>
+            <h3>How to Use:</h3>
+            <ol>
+                <li>Download and install the application on your device.</li>
+                <li>Create or join a peer network.</li>
+                <li>Start caching and sharing web content with your peers.</li>
+            </ol>
+            <p>For more detailed instructions, refer to the user manual or help section.</p>
+            <p>Get started now and enjoy faster and more efficient web browsing!</p>
+        </section>
     </main>
 
-    <script src="../JS/webpage.js"></script>
 </body>
 </html>

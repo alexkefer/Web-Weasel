@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
   toggleDeviceInfoVisibility(true); // Initial setup to display randomly generated information
 });
 
-
 function toggleDeviceInfoVisibility(isIconOn, data) {
+  console.log("isIconOn:", isIconOn);
+  console.log("Data:", data);
   const publicDeviceNameSpan = document.querySelector('.device-info-text');
   const ipAddressSpan = document.querySelector('.ip-adr-text');
   const nearestNodeSpan = document.querySelector('.neighbor-ip-text');
@@ -35,6 +36,7 @@ function toggleDeviceInfoVisibility(isIconOn, data) {
     nearestNodeSpan.textContent = "Nearest Connection Node: ";
   }
 }
+
 
 // Function to generate a random name
 function generateRandomName() {
