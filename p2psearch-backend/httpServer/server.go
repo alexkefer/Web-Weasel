@@ -3,13 +3,14 @@ package httpServer
 import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
-	"github.com/alexkefer/p2psearch-backend/p2pServer"
+	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
 	"github.com/alexkefer/p2psearch-backend/utils"
+	"net"
 	"net/http"
 )
 
-func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, shutdownChan chan<- bool) {
-	http.HandleFunc("/", helloHandler)
+func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
+	http.HandleFunc("/", defaultHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		shutdownHandler(w, r, shutdownChan)
@@ -19,12 +20,20 @@ func StartServer(peerMap *p2pServer.PeerMap, fileData *fileData.FileDataStore, s
 		peersHandler(w, r, peerMap)
 	})
 
-	http.HandleFunc("/store", func(w http.ResponseWriter, r *http.Request) {
-		storeFileHandler(w, r)
+	http.HandleFunc("/cache", func(w http.ResponseWriter, r *http.Request) {
+		cacheFileHandler(w, r, fileDataStore)
 	})
 
 	http.HandleFunc("/retrieve", func(w http.ResponseWriter, r *http.Request) {
-		retrieveFileHandler(w, r, fileData)
+		retrieveFileHandler(w, r, fileDataStore, peerMap, myAddr)
+	})
+
+	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
+		connectHandler(w, r, myAddr, peerMap)
+	})
+
+	http.HandleFunc("/disconnect", func(w http.ResponseWriter, r *http.Request) {
+		disconnectHandler(w, myAddr, peerMap)
 	})
 
 	port, _ := utils.FindOpenPort(8080, 8180)

@@ -1,118 +1,169 @@
-/* Package downloads assets required for the webpage */
+/* This is a helper utility built to regex through the html and modify the locations to where they are downloaded rather than their links */
 
 package webDownloader
 
 import (
-	"fmt"
+	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"golang.org/x/net/html"
 	"io"
 	"net/http"
 	"strings"
 )
 
-func downloadAllAssets(baseURL, htmlContent string) error {
+/*
+Legacy code that was replaced by the tokenizer
+func findAndReplaceLinks(html string, url string) string {
+	// takes in the html and the url and returns the html with the links modified
+	links := findAssets(html)
+	for i := 0; i < len(links); i++ {
+		if links[i][1][0] != '#' {
+			link := buildPageUrl(url, links[i][1])
+			assetInfo := retrieveAsset(link)
+			if assetInfo != "" {
+				makeFileLocation("savedPages/" + parsePageLocation(link))
+				saveAsset(assetInfo, parsePageName(links[i][1]), parsePageLocation(links[i][1]), "")
+				print("Retrieving Asset: " + link + "\n")
+			}
+		}
+	}
+	return html
+}
+
+func findAssets(html string) [][]string {
+	// takes in the html and returns the links to the assets in the html
+	regex := regexp.MustCompile(`src="([^"]+)"`)
+	return regex.FindAllStringSubmatch(html, -1)
+}*/
+
+func retrieveAsset(url string) ([]byte, string) {
+	// takes in the url and returns the asset
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", "P2PWebCache")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error("error downloading asset:", url, err)
+		return nil, ""
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error("error reading asset content:", err)
+		return nil, contentType
+	}
+	return body, contentType
+}
+
+func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStore) string {
 	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
+	modifiedHtml := ""
+
 	for {
 		tokenType := tokenizer.Next()
 		switch tokenType {
 		case html.ErrorToken:
-			return nil
+			return modifiedHtml
 		case html.StartTagToken, html.SelfClosingTagToken:
 			token := tokenizer.Token()
 			switch token.Data {
-			case "link":
+			case "link": // Download CSS
+				// TODO: Fix attr editing for this case
 				for _, attr := range token.Attr {
-					if attr.Key == "rel" && strings.Contains(attr.Val, "stylesheet") {
-						if href, ok := getAttributeValue(token, "href"); ok {
-							cssURL := buildURL(baseURL, href)
-							DownloadCSS(cssURL)
+					if href, ok := getAttributeValue(token, "href"); ok {
+						switch detectAssetType(href) {
+						case "css":
+							println(href)
+							link := buildPageUrl(url, href)
+							log.Debug("retrieving Asset: " + link)
+							content, contentType := retrieveAsset(link)
+							if content != nil {
+								href = trimLongURL(href)
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
+							}
+						case "img":
+							println("img")
+							link := buildPageUrl(url, href)
+							log.Info("retrieving Asset: " + link)
+							content, contentType := retrieveAsset(link)
+							if content != nil {
+								href = trimLongURL(href)
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
+							}
+						case "php":
+							println(href)
+							link := buildPageUrl(url, href)
+							log.Info("retrieving Asset: " + link)
+							content, contentType := retrieveAsset(link)
+							if content != nil {
+								href = trimLongURL(href)
+								SaveFile(content, CleanUrl(link), contentType, fileStore)
+								attr.Val = buildLocalPath(link)
+							}
+						case "js":
+							println("js")
 						}
 					}
 				}
-			case "script":
-				for _, attr := range token.Attr {
+			case "script": // Download JS
+				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						if src, ok := getAttributeValue(token, "src"); ok {
-							jsURL := buildURL(baseURL, src)
-							DownloadJS(jsURL)
+						link := url + attr.Val
+						log.Info("retrieving Asset: " + link)
+						content, contentType := retrieveAsset(link)
+						if content != nil {
+							SaveFile(content, CleanUrl(link), contentType, fileStore)
+							attr.Val = buildLocalPath(link)
+							token.Attr[i] = attr
 						}
 					}
 				}
-			case "img", "audio", "video":
-				for _, attr := range token.Attr {
+			case "img": // Download Images
+				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						if src, ok := getAttributeValue(token, "src"); ok {
-							println("src: " + src)
-							downloadAsset(baseURL, src)
+						link := url + attr.Val
+						log.Info("retrieving Asset: " + link)
+						content, contentType := retrieveAsset(link)
+						if content != nil {
+							SaveFile(content, CleanUrl(link), contentType, fileStore)
+							attr.Val = buildLocalPath(link)
+							token.Attr[i] = attr
 						}
 					}
 				}
 			}
+
+			modifiedHtml += html.UnescapeString(token.String())
+
+		default:
+			token := tokenizer.Token()
+			modifiedHtml += html.UnescapeString(token.String())
 		}
 	}
 }
 
-// Downloads the css file given the url
-func DownloadCSS(url string) {
-	// takes in url and returns the css file
-	resp, err := http.Get(url)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		panic("error getting url: " + url)
-	}
+/* Helper Functions */
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
+// using the url from the token, it will determine the asset type (css, php, js, img, etc)
+func detectAssetType(url string) string {
+	if strings.Contains(url, ".css") {
+		return "css"
+	} else if strings.Contains(url, ".js") {
+		return "js"
+	} else if strings.Contains(url, ".php") {
+		return "php"
+	} else if strings.Contains(url, ".jpg") || strings.Contains(url, ".jpeg") || strings.Contains(url, ".png") || strings.Contains(url, ".gif") || strings.Contains(url, ".svg") || strings.Contains(url, ".bmp") || strings.Contains(url, ".webp") || strings.Contains(url, ".ico") {
+		return "img"
+	} else {
+		return "unknown"
 	}
-	savePage(string(data), url, "savedPages", ".css")
 }
-
-// Downloads required js files
-func DownloadJS(url string) {
-	// takes in url and returns the js file
-	resp, err := http.Get(url)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		panic("error getting url:" + string(rune(resp.StatusCode)))
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	savePage(string(data), url, "savedPages", ".js")
-}
-
-// Downloads various assets given the url
-func downloadAsset(baseURL, url string) {
-	println("downloading asset: " + url + " " + baseURL)
-	resp, err := http.Get(buildURL(baseURL, url))
-	if err != nil {
-		println("Cannot access asset: " + buildURL(baseURL, url) + " " + err.Error())
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		if resp.StatusCode == 404 {
-			fmt.Println("Asset not found " + buildURL(baseURL, url))
-		}
-		println("error getting url:" + string(rune(resp.StatusCode)))
-	}
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	content := string(data)
-	savePage(content, url, "savedPages", "")
-}
-
-/* Helper functions */
 
 func getAttributeValue(token html.Token, key string) (string, bool) {
 	for _, attr := range token.Attr {
@@ -121,4 +172,46 @@ func getAttributeValue(token html.Token, key string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func trimLongURL(url string) string {
+	// takes in url and returns the trimmed url
+	if len(url) > 50 {
+		return url[:50]
+	}
+	return url
+}
+
+func buildPageUrl(url string, assetUrl string) string {
+	// takes in the source url and the asset url and returns the full url
+	if strings.HasPrefix(assetUrl, "http://") || strings.HasPrefix(assetUrl, "https://") {
+		return assetUrl
+	}
+	if strings.HasPrefix(assetUrl, "//") {
+		assetUrl = "https:" + assetUrl
+	} else if assetUrl[0] == '/' {
+		assetUrl = parsePageSource(parsePageLocation(url)) + assetUrl
+	} else {
+		for i := 0; i < len(assetUrl); i++ {
+			if assetUrl[i] == '.' {
+				assetUrl = "https://" + assetUrl
+				break
+			}
+			if assetUrl[i] == '/' {
+				assetUrl = parsePageSource(parsePageLocation(url)) + assetUrl
+				break
+			}
+		}
+	}
+	return assetUrl
+}
+
+func parsePageSource(url string) string {
+	// takes in the url and returns only the https://www.{url}
+	for i := 0; i < len(url); i++ {
+		if url[i] == '/' {
+			return "https://" + url[:i]
+		}
+	}
+	return "https://" + url
 }

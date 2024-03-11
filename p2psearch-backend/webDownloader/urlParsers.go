@@ -4,21 +4,9 @@ package webDownloader
 
 import "strings"
 
-func urlCleaner(url string) string {
-	// takes in url and returns the cleaned url (removes http(s):// and www.)
-	println(url)
-	if len(url) >= 8 && url[:8] == "https://" {
-		url = url[8:]
-	}
-	if len(url) >= 7 && url[:7] == "http://" {
-		url = url[7:]
-	}
-	if len(url) >= 4 && url[:4] == "www." {
-		url = url[4:]
-	}
-	if url[len(url)-1] == '/' {
-		url = url[:len(url)-1]
-	}
+func CleanUrl(url string) string {
+	url = urlCleaner(url)
+	url = strings.ReplaceAll(url, "/", "_")
 	return url
 }
 
@@ -34,28 +22,6 @@ func parseSourceLocation(url string) string {
 	for ; i < len(url); i++ {
 		if url[i] == '/' {
 			url = url[:i]
-			break
-		}
-	}
-	return url
-}
-
-func parsePageLocation(url string) string {
-	// takes in url and returns the location of the page
-	for i := len(url) - 1; i >= 0; i-- {
-		if url[i] == '/' {
-			url = url[:i]
-			break
-		}
-	}
-	return "savedPages/" + urlCleaner(url)
-}
-
-func parsePageName(url string) string {
-	// takes in url and returns the name of the page
-	for i := len(url) - 1; i >= 0; i-- {
-		if url[i] == '/' {
-			url = url[i+1:]
 			break
 		}
 	}

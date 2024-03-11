@@ -4,7 +4,7 @@ import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/httpServer"
 	"github.com/alexkefer/p2psearch-backend/log"
-	"github.com/alexkefer/p2psearch-backend/p2pServer"
+	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
 	"github.com/alexkefer/p2psearch-backend/utils"
 	"net"
 	"os"
@@ -31,11 +31,13 @@ func main() {
 		return
 	}
 
-	peerMap := p2pServer.PeerMap{Peers: make(map[string]p2pServer.Peer)}
-	myPeer := p2pServer.Peer{Addr: myAddr}
+	peerMap := p2pNetwork.PeerMap{Peers: make(map[string]p2pNetwork.Peer)}
+	myPeer := p2pNetwork.Peer{Addr: myAddr}
 	peerMap.AddPeer(myPeer)
 
-	go p2pServer.RequestHandler(myAddr, &peerMap)
+	fileDataStore := fileData.CreateFileDataStore()
+
+	go p2pNetwork.StartServer(myAddr, &peerMap, &fileDataStore)
 	log.Info("my address: %s", myAddr)
 	//addrChan <- myAddr
 
@@ -49,14 +51,11 @@ func main() {
 			log.Error("seedAddr parse error:", addrParseErr)
 			return
 		} else {
-			addMeErr := p2pServer.SendAddMeRequest(myAddr, seedAddr, &peerMap)
+			connectErr := p2pNetwork.Connect(myAddr, seedAddr, &peerMap)
 
-			if addMeErr != nil {
-				log.Error("could not connect to seed address: %s", addMeErr)
+			if connectErr != nil {
 				return
 			}
-
-			p2pServer.SendMoreAddMeRequests(myAddr, seedAddr, &peerMap)
 		}
 	}
 
@@ -69,9 +68,7 @@ func main() {
 		}
 	}()
 
-	fileDataStore := fileData.CreateFileDataStore()
-
-	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel)
+	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel, myAddr)
 
 	for {
 		if <-exitChannel {
@@ -79,11 +76,5 @@ func main() {
 		}
 	}
 
-	peerMap.Mutex.RLock()
-	for _, peer := range peerMap.Peers {
-		if peer.Addr != myAddr {
-			p2pServer.SendRemoveMeRequest(myAddr, peer.Addr)
-		}
-	}
-	peerMap.Mutex.RUnlock()
+	p2pNetwork.Disconnect(myAddr, &peerMap)
 }

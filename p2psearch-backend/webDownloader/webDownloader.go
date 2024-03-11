@@ -5,25 +5,24 @@
 package webDownloader
 
 import (
-	"fmt"
+	"errors"
+	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/fileTypes"
+	"github.com/alexkefer/p2psearch-backend/log"
 	"io"
 	"net/http"
 )
 
-func BuildDownloadedWebpage(url string) {
+func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) error {
 	pageHtml, err := DownloadPage(url)
 	if err != nil {
-		fmt.Println("error downloading page:", err)
-		return
+		log.Warn("error downloading page: %s", err)
+		return err
 	}
-	err2 := downloadAllAssets(parseSourceLocation(url), pageHtml)
-	if err2 != nil {
-		fmt.Println("error downloading assets:", err2)
-		return
-	}
-	pageHtml = regexHtml(pageHtml, url, "savedPages/")
-	savePage(pageHtml, url, "savedPages", ".html")
-	println("Successfully downloaded webpage: " + url)
+	modifiedHtml := DownloadAllAssets(url, pageHtml, fileDataStore)
+	SaveFile([]byte(modifiedHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
+	log.Info("downloaded webpage at %s", url)
+	return nil
 }
 
 func DownloadPage(url string) (string, error) {
@@ -34,7 +33,8 @@ func DownloadPage(url string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		panic("error getting url: " + url)
+		log.Warn("couldn't download web page at %s", url)
+		return "", errors.New("error getting url: " + url)
 	}
 
 	data, err := io.ReadAll(resp.Body)

@@ -6,18 +6,20 @@ import (
 )
 
 type FileData struct {
-	path         string
-	fileType     string
-	downloadTime time.Time
-	accessTime   time.Time
+	Url          string
+	FileLoc      string
+	FileType     string
+	DownloadTime time.Time
+	AccessTime   time.Time
 }
 
-func CreateFileData(path string, fileType string) FileData {
+func CreateFileData(url string, fileLoc string, fileType string) FileData {
 	return FileData{
-		path:         path,
-		fileType:     fileType,
-		downloadTime: time.Now(),
-		accessTime:   time.Now(),
+		Url:          url,
+		FileLoc:      fileLoc,
+		FileType:     fileType,
+		DownloadTime: time.Now(),
+		AccessTime:   time.Now(),
 	}
 }
 
@@ -49,6 +51,6 @@ func (store *FileDataStore) RetrieveFileData(path string) FileData {
 
 func (store *FileDataStore) StoreFileData(fileData FileData) {
 	store.mutex.Lock()
-	store.data[fileData.path] = fileData
+	store.data[fileData.Url] = fileData
 	store.mutex.Unlock()
 }

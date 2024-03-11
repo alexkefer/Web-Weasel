@@ -3,30 +3,46 @@
 package webDownloader
 
 import (
-	"fmt"
+	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/log"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"os"
+	"path/filepath"
 )
 
-func savePage(context string, url string, saveLocation string, fileType string) {
-	err := os.MkdirAll(parsePageLocation(url), os.ModePerm)
-	println("Saving Asset: " + url + " : " + urlCleaner(url) + " : " + buildURL(saveLocation, url))
+func SaveFile(content []byte, filename string, fileType string, fileDataStore *fileData.FileDataStore) {
+	saveLocation, err2 := utils.GetCachePath()
+	fullSaveLocation := filepath.Join(saveLocation, filename)
+	log.Info("saving asset: %s, %s", filename, fullSaveLocation)
+
+	if err2 != nil {
+		log.Error("failed to save page: %s", err2)
+		return
+	}
+
+	err := os.MkdirAll(saveLocation, os.ModePerm)
+
 	if err != nil {
-		fmt.Println(err)
+		log.Error("error saving asset: %s", err)
 		return
 	}
 	// takes in the context of the page and saves it to the save location
-	file, err := os.OpenFile(saveLocation+"/"+urlCleaner(url)+fileType, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(fullSaveLocation, os.O_RDWR|os.O_CREATE, 0644)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Error("error opening file: %s", err)
 		return
 	}
 	defer file.Close()
 
-	_, err2 := file.WriteString(context)
-	if err2 != nil {
-		fmt.Println("Error writing to file")
+	_, err3 := file.Write(content)
+	if err3 != nil {
+		log.Error("error writing to file: %s", err3)
+		return
 	} else {
-		fmt.Println("Successfully saved file")
+		log.Info("successfully saved file: %s", filename)
 	}
+
+	metadata := fileData.CreateFileData(filename, fullSaveLocation, fileType)
+	fileDataStore.StoreFileData(metadata)
 }
