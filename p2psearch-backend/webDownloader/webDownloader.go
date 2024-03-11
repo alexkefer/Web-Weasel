@@ -11,38 +11,48 @@ import (
 	"github.com/alexkefer/p2psearch-backend/log"
 	"io"
 	"net/http"
+	"strings"
 )
 
-func BuildDownloadedWebpage(url string, fileDataStore *fileData.FileDataStore) error {
-	pageHtml, err := DownloadPage(url)
+func CacheResource(url string, fileDataStore *fileData.FileDataStore) error {
+	content, contentType, err := downloadResource(url)
 	if err != nil {
 		log.Warn("error downloading page: %s", err)
 		return err
 	}
-	modifiedHtml := DownloadAllAssets(url, pageHtml, fileDataStore)
-	SaveFile([]byte(modifiedHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
-	log.Info("downloaded webpage at %s", url)
+
+	if strings.Contains(contentType, "text/html") {
+		modifiedHtml := DownloadAllAssets(url, string(content), fileDataStore)
+		SaveFile([]byte(modifiedHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
+		log.Info("cached webpage at %s", url)
+	} else {
+		SaveFile(content, CleanUrl(url), contentType, fileDataStore)
+		log.Info("cached resource at %s", url)
+	}
+
 	return nil
 }
 
-func DownloadPage(url string) (string, error) {
+func downloadResource(url string) ([]byte, string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return nil, "", err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		log.Warn("couldn't download web page at %s", url)
-		return "", errors.New("error getting url: " + url)
+		return nil, "", errors.New("error getting url: " + url)
 	}
 
+	contentType := resp.Header.Get("Content-Type")
 	data, err := io.ReadAll(resp.Body)
+
+	defer resp.Body.Close()
+
 	if err != nil {
-		panic(err)
+		return nil, contentType, errors.New("error getting url: " + url)
 	}
-	content := string(data)
 	// Print the content
 	// fmt.Println(content)
-	return content, nil
+	return data, contentType, nil
 }
