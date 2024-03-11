@@ -36,23 +36,3 @@ function toggleDeviceInfoVisibility(isIconOn, data) {
     nearestNodeSpan.textContent = "Nearest Connection Node: ";
   }
 }
-
-
-// Function to generate a random name
-function generateRandomName() {
-  const names = ['DeviceA', 'DeviceB', 'DeviceC', 'DeviceD'];
-  return names[Math.floor(Math.random() * names.length)];
-}
-
-// Function to generate a random IP address (for illustration purposes)
-function generateRandomIP() {
-  const baseIP = '192.168.0.';
-      const randomOctet = Math.floor(Math.random() * 255) + 1; // Generate a random number between 1 and 255
-      return baseIP + randomOctet;
-}
-
-// Function to generate a random nearest connection node (for illustration purposes)
-function generateRandomNode() {
-  const nodes = ['NodeX', 'NodeY', 'NodeZ'];
-  return nodes[Math.floor(Math.random() * nodes.length)];
-}
