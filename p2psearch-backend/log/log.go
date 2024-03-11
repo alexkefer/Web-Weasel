@@ -25,7 +25,7 @@ func logAtLevel(level int, format string, a ...any) {
 	case LevelDebug:
 		levelStr = "[DEBUG]"
 	case LevelInfo:
-		levelStr = "[INFO] "
+		levelStr = "\u001B[34m[INFO]\u001B[0m "
 	case LevelWarn:
 		levelStr = "\u001B[33m[WARN]\u001B[0m "
 	case LevelError:
