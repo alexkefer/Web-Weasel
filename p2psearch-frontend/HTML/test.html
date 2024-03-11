@@ -3,9 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch Example</title>
+    <link rel="stylesheet" href="../CSS/webpage_style.css">
+    <title>Downloads</title>
 </head>
 <body>
-    <script src="../JS/download.js" defer></script>
+    <header>
+        <h1>Downloads</h1>
+    </header>
+
+    <main id="main"> <!-- Add an id to main for JavaScript to target -->
+        <aside id="sidebar">
+            <a href="webpage.html" class="sidebar-item">Home</a>
+            <a href="downloads.html" class="sidebar-item">Downloads</a>
+            <a href="settings.html" class="sidebar-item">Settings</a>
+            <a href="resources.html" class="sidebar-item">Resources</a>
+        </aside>
+    </main>
+    <div id="main"></div>
+
+    <script src="../JS/test.js"></script> <!-- Move script tag to the end of the body -->
 </body>
 </html>
