@@ -1,65 +1,57 @@
-const mockFolders = [
-    { name: 'My Resource', files: ['file1.txt', 'file2.txt'] },
-    { name: 'Peer 1', files: ['file3.txt', 'file4.txt'] },
-    { name: 'Peer 2', files: ['file5.txt', 'file6.txt'] },
-    { name: 'Peer 3', files: ['file7.txt', 'file8.txt'] }
-];
+// Create a container div
+const downloadContainer = document.createElement('div');
+downloadContainer.setAttribute('id', 'downloadContainer');
 
-displayFolderList(mockFolders);
+// Create an h1 element
+const h1 = document.createElement('h1');
+h1.textContent = 'Fetch Example';
 
-function displayFolderList(folders) {
-    const fileListElement = document.getElementById('fileList');
+// Create a label element for the input field
+const label = document.createElement('label');
+label.textContent = 'Enter URL:';
+label.setAttribute('for', 'urlInput');
 
-    folders.forEach(folder => {
-        const folderItem = document.createElement('li');
-        folderItem.className = 'folder-list-item';
+// Create an input field
+const input = document.createElement('input');
+input.setAttribute('type', 'text');
+input.setAttribute('id', 'urlInput');
 
-        const folderToggle = document.createElement('span');
-        folderToggle.className = 'folder-toggle';
-        folderToggle.textContent = '▶ '; // Default: right-pointing arrow
-        folderToggle.addEventListener('click', () => toggleFolder(folderItem, folderToggle));
+// Create a button
+const button = document.createElement('button');
+button.setAttribute('id', 'fetchButton');
+button.textContent = 'Fetch';
 
-        const folderText = document.createTextNode(folder.name);
-        folderItem.appendChild(folderToggle);
-        folderItem.appendChild(folderText);
+// Append all elements to the container
+downloadContainer.appendChild(h1);
+downloadContainer.appendChild(label);
+downloadContainer.appendChild(input);
+downloadContainer.appendChild(button);
 
-        const subFileList = document.createElement('ul');
-        subFileList.className = 'file-list'; // Corrected class name
+// Append the container to the main element
+document.getElementById('main').appendChild(downloadContainer);
 
-        folder.files.forEach(file => {
-            const listItem = document.createElement('li');
-            const downloadButton = document.createElement('button');
-            downloadButton.className = 'download-button';
-            downloadButton.textContent = `Download ${file}`;
-            downloadButton.addEventListener('click', () => downloadFile(file));
+// Add event listener to the button for fetch action
+document.getElementById('fetchButton').addEventListener('click', function() {
+    const urlInput = document.getElementById('urlInput').value.trim();
+    if (!urlInput) {
+        alert('Please enter a valid URL.');
+        return;
+    }
 
-            listItem.appendChild(downloadButton);
-            subFileList.appendChild(listItem);
+    const url = 'http://localhost:8080/cache?path=' + encodeURIComponent(urlInput);
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Cached URL:', data);
+            // Further processing of the cached URL
+        })
+        .catch(error => {
+            console.error('There was a problem with your fetch operation:', error);
         });
-
-        folderItem.appendChild(subFileList);
-        fileListElement.appendChild(folderItem);
-    });
-}
-
-function downloadFile(filename) {
-    // Create a sample content for the file
-    const sampleContent = 'This is a sample content for ' + filename;
-
-    // Create a Blob with the sample content
-    const blob = new Blob([sampleContent], { type: 'text/plain' });
-
-    // Create a download link
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = filename;
-
-    // Append the link to the document
-    document.body.appendChild(downloadLink);
-
-    // Trigger a click on the link to start the download
-    downloadLink.click();
-
-    // Remove the link from the document
-    document.body.removeChild(downloadLink);
-}
+});
