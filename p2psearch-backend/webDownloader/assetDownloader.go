@@ -11,31 +11,6 @@ import (
 	"strings"
 )
 
-/*
-Legacy code that was replaced by the tokenizer
-func findAndReplaceLinks(html string, url string) string {
-	// takes in the html and the url and returns the html with the links modified
-	links := findAssets(html)
-	for i := 0; i < len(links); i++ {
-		if links[i][1][0] != '#' {
-			link := buildPageUrl(url, links[i][1])
-			assetInfo := retrieveAsset(link)
-			if assetInfo != "" {
-				makeFileLocation("savedPages/" + parsePageLocation(link))
-				saveAsset(assetInfo, parsePageName(links[i][1]), parsePageLocation(links[i][1]), "")
-				print("Retrieving Asset: " + link + "\n")
-			}
-		}
-	}
-	return html
-}
-
-func findAssets(html string) [][]string {
-	// takes in the html and returns the links to the assets in the html
-	regex := regexp.MustCompile(`src="([^"]+)"`)
-	return regex.FindAllStringSubmatch(html, -1)
-}*/
-
 func retrieveAsset(url string) ([]byte, string) {
 	// takes in the url and returns the asset
 	req, _ := http.NewRequest("GET", url, nil)
@@ -72,42 +47,18 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 			token := tokenizer.Token()
 			switch token.Data {
 			case "link": // Download CSS
-				// TODO: Fix attr editing for this case
-				for _, attr := range token.Attr {
-					if href, ok := getAttributeValue(token, "href"); ok {
-						switch detectAssetType(href) {
-						case "css":
-							println(href)
-							link := buildPageUrl(url, href)
-							log.Debug("retrieving Asset: " + link)
+				for i, attr := range token.Attr {
+					if attr.Key == "href" {
+						rel, ok := getAttributeValue(token, "rel")
+						if ok && (rel == "stylesheet") {
+							link := url + attr.Val
+							log.Debug("retrieving stylesheet asset: " + link)
 							content, contentType := retrieveAsset(link)
 							if content != nil {
-								href = trimLongURL(href)
 								SaveFile(content, CleanUrl(link), contentType, fileStore)
 								attr.Val = buildLocalPath(link)
+								token.Attr[i] = attr
 							}
-						case "img":
-							println("img")
-							link := buildPageUrl(url, href)
-							log.Info("retrieving Asset: " + link)
-							content, contentType := retrieveAsset(link)
-							if content != nil {
-								href = trimLongURL(href)
-								SaveFile(content, CleanUrl(link), contentType, fileStore)
-								attr.Val = buildLocalPath(link)
-							}
-						case "php":
-							println(href)
-							link := buildPageUrl(url, href)
-							log.Info("retrieving Asset: " + link)
-							content, contentType := retrieveAsset(link)
-							if content != nil {
-								href = trimLongURL(href)
-								SaveFile(content, CleanUrl(link), contentType, fileStore)
-								attr.Val = buildLocalPath(link)
-							}
-						case "js":
-							println("js")
 						}
 					}
 				}
@@ -115,7 +66,7 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 				for i, attr := range token.Attr {
 					if attr.Key == "src" {
 						link := url + attr.Val
-						log.Info("retrieving Asset: " + link)
+						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
 							SaveFile(content, CleanUrl(link), contentType, fileStore)
@@ -128,7 +79,7 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 				for i, attr := range token.Attr {
 					if attr.Key == "src" {
 						link := url + attr.Val
-						log.Info("retrieving Asset: " + link)
+						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
 							SaveFile(content, CleanUrl(link), contentType, fileStore)

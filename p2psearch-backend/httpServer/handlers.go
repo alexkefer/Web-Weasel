@@ -70,7 +70,8 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 			log.Error("couldn't open file %q: %s", metadata.FileLoc, openErr)
 			return
 		}
-
+		
+		w.Header().Set("Content-Type", metadata.FileType)
 		_, fileErr := file.WriteTo(w)
 
 		if fileErr != nil {
@@ -79,7 +80,7 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 			return
 		}
 
-		w.Header().Add("Content-Type", metadata.FileType)
+		log.Debug("retrieving file: %s, mime type: %s", metadata.FileLoc, metadata.FileType)
 	} else {
 		log.Info("server had no file for %s", pathClean)
 
