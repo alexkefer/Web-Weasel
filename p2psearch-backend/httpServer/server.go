@@ -1,3 +1,7 @@
+// Package httpServer implements a RESTful HTTP server used for serving cached resources to the browser.
+//
+// This package contains the StartServer routine for starting the HTTP server, as well as handler routines for the
+// various API calls HTTP clients can make to the server.
 package httpServer
 
 import (
@@ -9,6 +13,11 @@ import (
 	"net/http"
 )
 
+// StartServer starts an HTTP sever used to serve cached resources to the browser. Should pass references to an
+// initialized p2pNetwork.PeerMap, an initialized fileData.FileDataStore, a boolean channel transmitter, and a net.Addr
+// representing the server's address. The shutdownChan argument will receive true when an HTTP client requests the
+// server shutdown. The HTTP server will mutate the peerMap and fileDataStore arguments at the request of an HTTP
+// client. This function will not return.
 func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
 	http.HandleFunc("/", defaultHandler)
 
