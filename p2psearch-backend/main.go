@@ -1,3 +1,4 @@
+// Main package for the peer-to-peer web cache backend. This package contains the entry point for the backend.
 package main
 
 import (
@@ -11,7 +12,7 @@ import (
 	"os/signal"
 )
 
-// This is the main function of the program
+// main starts the peer-to-peer backend and http web server.
 func main() {
 
 	if len(os.Args) > 2 {
@@ -39,7 +40,6 @@ func main() {
 
 	go p2pNetwork.StartServer(myAddr, &peerMap, &fileDataStore)
 	log.Info("my address: %s", myAddr)
-	//addrChan <- myAddr
 
 	// If an address is given, try to join its network
 	if len(os.Args) > 1 {
