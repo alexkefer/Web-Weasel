@@ -15,7 +15,6 @@ func StartServer(myAddr net.Addr, peerMap *PeerMap, files *fileData.FileDataStor
 		return
 	}
 
-	// This is an infinite loop in go
 	for {
 		conn, connErr := listener.Accept()
 
