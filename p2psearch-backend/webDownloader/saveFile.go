@@ -13,7 +13,7 @@ import (
 func SaveFile(content []byte, filename string, fileType string, fileDataStore *fileData.FileDataStore) {
 	saveLocation, err2 := utils.GetCachePath()
 	fullSaveLocation := filepath.Join(saveLocation, filename)
-	log.Info("saving asset: %s, %s", filename, fullSaveLocation)
+	log.Debug("saving asset: %s, %s, %s", filename, fullSaveLocation, fileType)
 
 	if err2 != nil {
 		log.Error("failed to save page: %s", err2)

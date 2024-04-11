@@ -6,6 +6,9 @@ import (
 	"net"
 )
 
+// Connect trys to add a peer at targetAddr to its own PeerMap after sending an AddMeRequest. It also sends
+// AddMeRequest's to every new peer discovered from the peer corresponding to targetAddr. It returns nil on success, and
+// an error if something went wrong.
 func Connect(myAddr net.Addr, targetAddr net.Addr, peerMap *PeerMap) error {
 	log.Info("connecting to target address %s", targetAddr)
 	err := sendAddMeRequest(myAddr, targetAddr, peerMap)
@@ -71,7 +74,7 @@ func sendAddMeRequestsToPeersOfPeer(from net.Addr, toPeersOf net.Addr, peerMap *
 	}
 }
 
-// Disconnect Sends RemoveMe requests to all peers and remove them from peerMap
+// Disconnect Sends RemoveMeRequest's to all peers and removes them from PeerMap.
 func Disconnect(myAddr net.Addr, peerMap *PeerMap) {
 	log.Info("disconnecting from all peers")
 	peerMap.Mutex.RLock()
@@ -104,27 +107,8 @@ func sendRemoveMeRequest(from net.Addr, to net.Addr) {
 	}
 }
 
-// ShareAddress /* This function sends the given address to all addresses in the given map
-func ShareAddress(address net.Addr, addresses map[net.Addr]int) {
-	for addr, _ := range addresses {
-		if addr.String() != address.String() {
-			conn, connErr := net.Dial("tcp", addr.String())
-
-			if connErr != nil {
-				log.Error("error connecting to address: %s", connErr)
-				return
-			}
-
-			err := SendMessage(conn, Message{SenderAddr: address.String()})
-
-			if err != nil {
-				log.Error("error sending address: %s", err)
-				return
-			}
-		}
-	}
-}
-
+// SendFileRequest sends a FileRequest Message to the peer corresponding to the to argument. The path argument should
+// be the url of the request file. On success, it returns the response Message. Otherwise, it returns an error.
 func SendFileRequest(to net.Addr, from net.Addr, path string) (*Message, error) {
 	conn, connErr := utils.MakeTcpConnection(to)
 

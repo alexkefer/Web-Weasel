@@ -39,10 +39,11 @@ func cacheFileHandler(w http.ResponseWriter, r *http.Request, fileDataStore *fil
 		log.Warn("error caching file: %s", err)
 		fmt.Fprintf(w, "error caching file: %s", err)
 	} else {
-		err = webDownloader.BuildDownloadedWebpage(path, fileDataStore)
+		err = webDownloader.CacheResource(path, fileDataStore)
 		if err == nil {
 			fmt.Fprintf(w, "server cached resource found at %q", path)
 		} else {
+			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "server failed to cache resource: %s", err)
 		}
 	}
@@ -71,6 +72,7 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 			return
 		}
 
+		w.Header().Set("Content-Type", metadata.FileType)
 		_, fileErr := file.WriteTo(w)
 
 		if fileErr != nil {
@@ -79,7 +81,7 @@ func retrieveFileHandler(w http.ResponseWriter, r *http.Request, fileData *fileD
 			return
 		}
 
-		w.Header().Add("Content-Type", metadata.FileType)
+		log.Debug("retrieving file: %s, mime type: %s", metadata.FileLoc, metadata.FileType)
 	} else {
 		log.Info("server had no file for %s", pathClean)
 

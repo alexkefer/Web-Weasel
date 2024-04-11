@@ -1,19 +1,9 @@
+// Package fileTypes contains string constants for various MIME file types.
+//
+// MIME types are used by in HTTP protocol headers to indicate the type of data a response contains (HTML, javascript,
+// etc.)
 package fileTypes
-
-func GetFileExtension(fileType string) string {
-	switch fileType {
-	case Html:
-		return ".html"
-	case Css:
-		return ".css"
-	case Javascript:
-		return ".js"
-	default:
-		return ""
-	}
-}
 
 const Html = "text/html"
 const Css = "text/css"
 const Javascript = "application/javascript"
-const Image = "img"
