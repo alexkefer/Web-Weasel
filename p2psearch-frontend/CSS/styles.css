@@ -12,7 +12,7 @@ body {
   .user-info {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Optional: Align items at the center horizontally */
+    align-items: center; /* Align items at the center horizontally */
   }
   
   .device-info-text,
