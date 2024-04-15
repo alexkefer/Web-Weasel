@@ -6,6 +6,8 @@ import (
 	"runtime"
 )
 
+// GetCachePath returns the file system path where cached files should be stored. Returns and logs error if the user's
+// home directory couldn't be found for some reason.
 func GetCachePath() (string, error) {
 	home, err := os.UserHomeDir()
 
@@ -15,6 +17,7 @@ func GetCachePath() (string, error) {
 
 	switch runtime.GOOS {
 	case "windows":
+		// Maybe on windows this should be somewhere else like appdata?
 		return home + "\\p2pwebcache", err
 	default:
 		return home + "/.cache/p2pwebcache", err

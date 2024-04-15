@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+// StartServer starts the peer-to-peer TCP server. Should pass own TCP address, initialized PeerMap and initialized
+// fileData.FileDataStore. This function does not return.
 func StartServer(myAddr net.Addr, peerMap *PeerMap, files *fileData.FileDataStore) {
 	listener, listenErr := net.Listen("tcp", myAddr.String())
 
@@ -15,6 +17,7 @@ func StartServer(myAddr net.Addr, peerMap *PeerMap, files *fileData.FileDataStor
 		return
 	}
 
+	// TODO: The server should bee stopped when the program is exiting.
 	for {
 		conn, connErr := listener.Accept()
 
@@ -27,6 +30,9 @@ func StartServer(myAddr net.Addr, peerMap *PeerMap, files *fileData.FileDataStor
 	}
 }
 
+// HandleConnection handles TCP connections the peer-to-peer server receives from other peers. It decodes a Message
+// struct from the connection and responds based on the Message.Code field. Should pass own net.Addr, net.Conn struct
+// from listener.Accept() after checking for errors, initialized PeerMap and initialized fileData.FileDataStore.
 func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap, files *fileData.FileDataStore) {
 	message, messageErr := ReceiveMessage(conn)
 
@@ -115,6 +121,7 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap, files *f
 	CloseConnection(conn)
 }
 
+// CloseConnection closes net.Conn struct and reports any errors raised during closing to log.
 func CloseConnection(conn net.Conn) {
 	err := conn.Close()
 	if err != nil {
