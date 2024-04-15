@@ -18,7 +18,7 @@ import (
 // representing the server's address. The shutdownChan argument will receive true when an HTTP client requests the
 // server shutdown. The HTTP server will mutate the peerMap and fileDataStore arguments at the request of an HTTP
 // client. This function will not return.
-func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr) {
+func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataStore, shutdownChan chan<- bool, myAddr net.Addr, port string) {
 	http.HandleFunc("/", defaultHandler)
 
 	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +45,17 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataSt
 		disconnectHandler(w, myAddr, peerMap)
 	})
 
-	port, _ := utils.FindOpenPort(8080, 8180)
+	if port == "" {
+		var err error
+		port, err = utils.FindOpenPort(8080, 8180)
+
+		if err != nil {
+			log.Error("could not find open port for http server: %s", err)
+			return
+		}
+	} else {
+		port = ":" + port
+	}
 
 	log.Info("opening http server on port %s", port)
 

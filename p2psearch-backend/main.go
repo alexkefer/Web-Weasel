@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/httpServer"
 	"github.com/alexkefer/p2psearch-backend/log"
@@ -14,44 +15,53 @@ import (
 
 // main starts the peer-to-peer backend and http web server.
 func main() {
+	var connect string
+	var p2pPort string
+	var httpPort string
 
-	if len(os.Args) > 2 {
-		log.Error("either 0 or 1 arguments expected")
-		return
+	flag.StringVar(&connect, "connect", "", "Peer IP address the backend should connect to initially")
+	flag.StringVar(&p2pPort, "p2p-port", "", "Port the p2p server should use")
+	flag.StringVar(&httpPort, "http-port", "", "Port the http server should use")
+
+	flag.Parse()
+
+	if p2pPort == "" {
+		var portErr error
+		p2pPort, portErr = utils.FindOpenPort(9000, 9100)
+		if portErr != nil {
+			log.Error("error finding open port: %s", portErr)
+			return
+		}
+	} else {
+		p2pPort = ":" + p2pPort
 	}
-	port, portErr := utils.FindOpenPort(9000, 9100)
-	if portErr != nil {
-		log.Error("error finding open port: %s", portErr)
-		return
-	}
-	address := utils.GetLocalIPAddress() + port
-	myAddr, myAddrParseErr := net.ResolveTCPAddr("tcp", address)
+
+	address := utils.GetLocalIPAddress() + p2pPort
+	myP2PAddr, myAddrParseErr := net.ResolveTCPAddr("tcp", address)
 
 	if myAddrParseErr != nil {
-		log.Error("couldn't parsing my ip arg:", myAddrParseErr)
+		log.Error("couldn't parsing my ip arg: %s", myAddrParseErr)
 		return
 	}
 
 	peerMap := p2pNetwork.PeerMap{Peers: make(map[string]p2pNetwork.Peer)}
-	myPeer := p2pNetwork.Peer{Addr: myAddr}
+	myPeer := p2pNetwork.Peer{Addr: myP2PAddr}
 	peerMap.AddPeer(myPeer)
 
 	fileDataStore := fileData.CreateFileDataStore()
 
-	go p2pNetwork.StartServer(myAddr, &peerMap, &fileDataStore)
-	log.Info("my address: %s", myAddr)
+	go p2pNetwork.StartServer(myP2PAddr, &peerMap, &fileDataStore)
+	log.Info("my p2p server address: %s", myP2PAddr)
 
 	// If an address is given, try to join its network
-	if len(os.Args) > 1 {
-		seedAddrArg := os.Args[1]
-
-		seedAddr, addrParseErr := net.ResolveTCPAddr("tcp", seedAddrArg)
+	if connect != "" {
+		seedAddr, addrParseErr := net.ResolveTCPAddr("tcp", connect)
 
 		if addrParseErr != nil {
-			log.Error("seedAddr parse error:", addrParseErr)
+			log.Error("seedAddr parse error: %s", addrParseErr)
 			return
 		} else {
-			connectErr := p2pNetwork.Connect(myAddr, seedAddr, &peerMap)
+			connectErr := p2pNetwork.Connect(myP2PAddr, seedAddr, &peerMap)
 
 			if connectErr != nil {
 				return
@@ -68,7 +78,7 @@ func main() {
 		}
 	}()
 
-	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel, myAddr)
+	go httpServer.StartServer(&peerMap, &fileDataStore, exitChannel, myP2PAddr, httpPort)
 
 	for {
 		if <-exitChannel {
@@ -76,5 +86,5 @@ func main() {
 		}
 	}
 
-	p2pNetwork.Disconnect(myAddr, &peerMap)
+	p2pNetwork.Disconnect(myP2PAddr, &peerMap)
 }

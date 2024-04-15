@@ -10,7 +10,7 @@ go run .
 To connect another instance, run the following command.
 
 ``
-go run . <ip addr>:<port>
+go run . --connect <ip addr>:<port>
 ``
 
 # To Do
