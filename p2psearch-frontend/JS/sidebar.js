@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Array containing the sidebar items with their names and URLs
     var sidebarItems = [
-        { name: "Home", url: "index.html" },
+        { name: "Home", url: "webapp.html" },
         { name: "Tutorial", url: "tutorial.html" },
         { name: "Caching", url: "caching.html" },
         { name: "Settings", url: "settings.html" },
