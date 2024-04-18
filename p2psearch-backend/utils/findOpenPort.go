@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-// This function finds an open port in the range [startPort, endPort]
+// FindOpenPort finds an open port in the range [startPort, endPort]
 func FindOpenPort(startPort, endPort int) (string, error) {
 	for port := startPort; port <= endPort; port++ {
 		// Attempt to bind to this port

@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// MakeTcpConnection opens a new TCP connection with the server at to net.Addr argument. Returns the connection if no
+// errors were raised. Otherwise, it returns and logs errors.
 func MakeTcpConnection(to net.Addr) (net.Conn, error) {
 	duration, parseErr := time.ParseDuration("5s")
 
