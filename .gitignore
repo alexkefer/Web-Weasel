@@ -1,2 +1,6 @@
 .idea
 p2psearch-backend/savedPages/
+p2psearch-frontend-react/node_modules/*
+p2psearch-frontend-vreact/node_modules/*
+p2psearch-frontend-react/package-lock.json
+p2psearch-frontend-vreact/package-lock.json
