@@ -19,7 +19,7 @@ function Popup() {
         </label>
   
         <button onClick={() => window.open('webapp.html', '_blank')} type="button" className="custom-button">
-          <a href="webapp.html" target="_blank">Go to Web App</a>
+          Go to Web App
         </button>
   
         <label className="switch">
