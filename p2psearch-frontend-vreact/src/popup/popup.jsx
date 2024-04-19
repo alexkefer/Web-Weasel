@@ -10,7 +10,7 @@ function Popup() {
 
   const toggleIcon = () => {
     const iconImg = document.querySelector('.icon-img');
-    iconImg.src = (iconImg.src.includes('on_power_icon.png')) ? '../images/off_power_icon.png' : '../images/on_power_icon.png';
+    iconImg.src = (iconImg.src.includes('on_power_icon.png')) ? '../../images/off_power_icon.png' : '../../images/on_power_icon.png';
 
     const randomData = {
       deviceName: generateRandomName(),
@@ -49,12 +49,12 @@ function Popup() {
       <label className="icon">
         <div className="icon-container">
           <button id="iconButton" className="iconButton" onClick={toggleIcon}>
-            <img className="icon-img" src="../images/on_power_icon.png" alt="Icon" />
+            <img className="icon-img" src="../../images/on_power_icon.png" alt="Icon" />
           </button>
         </div>
       </label>
 
-      <button onClick={() => window.open('src/pages/webapp.html', '_blank')} type="button" className="custom-button">
+      <button onClick={() => window.open('webapp.html', '_blank')} type="button" className="custom-button">
         Go to Web App
       </button>
 
