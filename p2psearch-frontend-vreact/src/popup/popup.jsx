@@ -1,26 +1,32 @@
 import React, { useState } from "react";
-import './popup.css';
+import "./popup.css";
+// I added react-switch package, we should consider switching to their switch in order to simplify our codebase.
 
 function Popup() {
   const [deviceInfo, setDeviceInfo] = useState({
     deviceName: generateRandomName(),
     ipAddress: generateRandomIP(),
-    nearestNode: generateRandomNode()
+    nearestNode: generateRandomNode(),
   });
 
   const toggleIcon = () => {
-    const iconImg = document.querySelector('.icon-img');
-    iconImg.src = (iconImg.src.includes('on_power_icon.png')) ? '../../images/off_power_icon.png' : '../../images/on_power_icon.png';
+    const iconImg = document.querySelector(".icon-img");
+    iconImg.src = iconImg.src.includes("on_power_icon.png")
+      ? "../../images/off_power_icon.png"
+      : "../../images/on_power_icon.png";
 
     const randomData = {
       deviceName: generateRandomName(),
       ipAddress: generateRandomIP(),
-      nearestNode: generateRandomNode()
+      nearestNode: generateRandomNode(),
     };
 
     console.log("Received data:", randomData);
 
-    toggleDeviceInfoVisibility(iconImg.src.includes('on_power_icon.png'), randomData);
+    toggleDeviceInfoVisibility(
+      iconImg.src.includes("on_power_icon.png"),
+      randomData,
+    );
   };
 
   const toggleDeviceInfoVisibility = (isIconOn, data) => {
@@ -31,9 +37,9 @@ function Popup() {
       setDeviceInfo(data);
     } else {
       setDeviceInfo({
-        deviceName: '',
-        ipAddress: '',
-        nearestNode: ''
+        deviceName: "",
+        ipAddress: "",
+        nearestNode: "",
       });
     }
   };
@@ -41,20 +47,34 @@ function Popup() {
   return (
     <div>
       <label className="user-info">
-        <span className="device-info-text">Public Device Name: {deviceInfo.deviceName}</span>
-        <span className="ip-adr-text">Node IP Address: {deviceInfo.ipAddress}</span>
-        <span className="neighbor-ip-text">Nearest Connection Node: {deviceInfo.nearestNode}</span>
+        <span className="device-info-text">
+          Public Device Name: {deviceInfo.deviceName}
+        </span>
+        <span className="ip-adr-text">
+          Node IP Address: {deviceInfo.ipAddress}
+        </span>
+        <span className="neighbor-ip-text">
+          Nearest Connection Node: {deviceInfo.nearestNode}
+        </span>
       </label>
 
       <label className="icon">
         <div className="icon-container">
           <button id="iconButton" className="iconButton" onClick={toggleIcon}>
-            <img className="icon-img" src="../../images/on_power_icon.png" alt="Icon" />
+            <img
+              className="icon-img"
+              src="../../images/on_power_icon.png"
+              alt="Icon"
+            />
           </button>
         </div>
       </label>
 
-      <button onClick={() => window.open('webapp.html', '_blank')} type="button" className="custom-button">
+      <button
+        onClick={() => window.open("webapp.html", "_blank")}
+        type="button"
+        className="custom-button"
+      >
         Go to Web App
       </button>
 
@@ -97,19 +117,19 @@ export default Popup;
 
 // Function to generate a random name
 function generateRandomName() {
-  const names = ['MyNetwork1'];
+  const names = ["MyNetwork1"];
   return names[Math.floor(Math.random() * names.length)];
 }
 
 // Function to generate a random IP address (for illustration purposes)
 function generateRandomIP() {
-  const baseIP = '192.168.0.';
+  const baseIP = "192.168.0.";
   const randomOctet = Math.floor(Math.random() * 255) + 1; // Generate a random number between 1 and 255
   return baseIP + randomOctet;
 }
 
 // Function to generate a random nearest connection node (for illustration purposes)
 function generateRandomNode() {
-  const nodes = [''];
+  const nodes = [""];
   return nodes[Math.floor(Math.random() * nodes.length)];
 }
