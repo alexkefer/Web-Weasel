@@ -6,11 +6,11 @@ const Layout = ({ children }) => {
   return (
     <div
       className={
-        "min-h-screen overflow-auto max-w-screen bg-gradient-to-br from-blue-300 to-purple-400"
+        "min-h-screen flex flex-col overflow-auto max-w-screen bg-gradient-to-br from-blue-300 to-purple-400"
       }
     >
-      <div className={"flex m-auto"}>
-        <div className={"h-full bg-black bg-opacity-30"}>
+      <div className={"flex"}>
+        <div className={"h-full"}>
           <Navigation />
         </div>
         <main className={"container mx-auto mt-5"}>

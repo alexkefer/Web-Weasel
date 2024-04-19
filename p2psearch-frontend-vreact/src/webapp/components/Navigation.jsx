@@ -1,38 +1,67 @@
 import { Link } from "react-router-dom";
+import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
+import { useState } from "react";
+import { FaHome, FaRegQuestionCircle } from "react-icons/fa";
+import { FaGear } from "react-icons/fa6";
+import { MdOutlineStorage } from "react-icons/md";
+import { IoDocumentTextOutline } from "react-icons/io5";
 
 const Navigation = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [toggled, setToggled] = useState(false);
+
   return (
-    <nav className={"h-screen overflow-y-auto border-r-2 border-r-white p-2"}>
-      <aside className="flex flex-col overflow-y-auto">
-        <ul className={"flex flex-col space-y-2"}>
-          <li>
-            <Link to="/" className={"nav-item"}>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/settings" className={"nav-item"}>
-              Settings
-            </Link>
-          </li>
-          <li>
-            <Link to="/caching" className={"nav-item"}>
-              Caching
-            </Link>
-          </li>
-          <li>
-            <Link to="/tutorial" className={"nav-item"}>
-              Tutorial
-            </Link>
-          </li>
-          <li>
-            <Link to="/resources" className={"nav-item"}>
-              Resources
-            </Link>
-          </li>
-        </ul>
-      </aside>
-    </nav>
+    <Sidebar
+      breakPoint={"md"}
+      collapsed={collapsed}
+      rootStyles={{
+        height: "100vh",
+        width: "200px",
+        zIndex: 1000,
+      }}
+      backgroundColor={"rgba(0, 0, 0, 0.10)"}
+      onToggle={() => setCollapsed(!collapsed)}
+      toggled={toggled}
+      toggle={setToggled}
+      className={"bg-black bg-opacity-30 border-r-2 border-gray-300"}
+      style={{ height: "100vh" }}
+    >
+      <Menu iconShape="square">
+        <div className={"font-semibold text-xl flex justify-center my-2"}>
+          <h3>P2P Web Cache</h3>
+        </div>
+        <MenuItem
+          icon={<FaHome />}
+          component={<Link to={"/"} className={"nav-item"} />}
+        >
+          Home
+        </MenuItem>
+        <MenuItem
+          icon={<FaGear />}
+          component={<Link to={"/settings"} className={"nav-item"} />}
+        >
+          Settings
+        </MenuItem>
+        <MenuItem
+          icon={<MdOutlineStorage />}
+          component={<Link to={"/caching"} className={"nav-item"} />}
+        >
+          Cache
+        </MenuItem>
+        <MenuItem
+          icon={<FaRegQuestionCircle />}
+          component={<Link to={"/tutorial"} className={"nav-item"} />}
+        >
+          Tutorial
+        </MenuItem>
+        <MenuItem
+          icon={<IoDocumentTextOutline />}
+          component={<Link to={"/Resources"} className={"nav-item"} />}
+        >
+          Resources
+        </MenuItem>
+      </Menu>
+    </Sidebar>
   );
 };
 
