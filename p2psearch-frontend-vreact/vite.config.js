@@ -6,4 +6,11 @@ import manifest from './public/manifest.json'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), crx({ manifest })],
+  build: {
+    rollupOptions: {
+      input: {
+        welcome: 'src/pages/webapp.html',
+      },
+    },
+  },
 })
