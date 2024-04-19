@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .nav-item {
+        @apply flex text-lg font-bold bg-green-600 rounded-xl px-2 py-1 hover:bg-green-700 bg-opacity-80 transition;
+    }
+    h1 {
+        @apply text-4xl font-bold text-center;
+    }
+    h2 {
+        @apply text-3xl font-bold text-center;
+    }
+    h3 {
+        @apply text-2xl font-bold text-center;
+    }
+    h4 {
+        @apply text-xl font-bold text-center;
+    }
+    p {
+        @apply text-lg text-center;
+    }
+}
