@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        welcome: "src/pages/webapp.html",
+        webapp: "src/pages/webapp.html",
       },
     },
   },
