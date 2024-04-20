@@ -16,11 +16,11 @@ const Footer = () => {
           }
         >
           <h4 className={"text-md mb-2"}>{credits.creator}</h4>
-          <div className={"flex-col"}>
+          <ul className={"flex-col"}>
             {credits.names.map((name, index) => {
-              return <p key={index}>{name}</p>;
+              return <li key={index}>{name}</li>;
             })}
-          </div>
+          </ul>
         </div>
         <div className="flex flex-col gap-10 float-right text-xl font-bold tracking-wide uppercase text-violet-100 py-4 max-md:flex-wrap max-md:max-w-full">
           <h1 className={"text-lg justify-end"}>

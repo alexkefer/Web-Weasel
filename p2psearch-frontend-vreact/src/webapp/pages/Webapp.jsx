@@ -1,5 +1,7 @@
 //import { useState } from 'react'
 import Layout from "../Layout.jsx";
+import { Link } from "react-router-dom";
+import { FaExclamation } from "react-icons/fa";
 
 const Webapp = () => {
   return (
@@ -11,8 +13,8 @@ const Webapp = () => {
           network with your peers.
         </p>
         <div className={"flex flex-col gap-2 justify-between"}>
-          <h3 className={"text-xl"}>Features:</h3>
-          <ul className={"list-inside list-disc"}>
+          <ul className={"styled-list"}>
+            <h3 className={"text-xl"}>Features:</h3>
             <li>Decentralized caching of web content</li>
             <li>
               Reduced bandwidth usage by sharing cached content with peers
@@ -22,18 +24,57 @@ const Webapp = () => {
           </ul>
         </div>
         <div className={"flex flex-col gap-2 justify-between"}>
-          <h3 className={"text-xl"}>How to Use:</h3>
-          <ol className={"list-inside list-decimal"}>
+          <ol className={"styled-list"}>
+            <h3 className={"text-xl"}>How to Use:</h3>
             <li>Download and install the application on your device.</li>
             <li>Create or join a peer network.</li>
             <li>Start caching and sharing web content with your peers.</li>
+            <div
+              className={
+                "flex flex-row gap-1 bg-black bg-opacity-20 rounded-lg"
+              }
+            >
+              <FaExclamation className={"text-red-600 text-lg mt-1 ml-1"} />
+              <p>
+                For more detailed instructions on how to use the application,
+                please refer to the{" "}
+                <Link
+                  to="/tutorial"
+                  className={"underline text-blue-700 hover:text-blue-800"}
+                >
+                  tutorial.
+                </Link>
+              </p>
+            </div>
           </ol>
         </div>
-        <p>
-          For more detailed instructions, refer to the user manual or help
-          section.
+        <p className={"flex justify-center mx-10"}>
+          Get started now and enjoy seamless connectivity with your peers
+          sharing capabilities with those you trust!
         </p>
-        <p>Get started now and enjoy faster and more efficient web browsing!</p>
+        <div className={"changelog-section"}>
+          <h3 className={"text-xl"}>Changelog:</h3>
+          <ul className={"changelog-list"}>
+            <li className={"changelog-list-item"}>
+              <b>Version 1.0.0</b>
+              <ul>
+                <li>Initial release of the web application.</li>
+                <li>
+                  Basic functionality for creating and managing peer networks.
+                </li>
+              </ul>
+            </li>
+            <li className={"changelog-list-item"}>
+              <b>Version 1.1.0</b>
+              <ul>
+                <li>
+                  Improved user interface on the extension by switching to Vite
+                  & React.
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
     </Layout>
   );

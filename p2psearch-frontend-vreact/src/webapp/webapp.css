@@ -6,6 +6,27 @@
     .nav-item {
         @apply text-lg font-bold py-2 px-2 hover:bg-blue-500 hover:bg-opacity-50 transition;
     }
+    .styled-list {
+        @apply list-disc list-inside mr-4 ml-2 bg-black bg-opacity-15 p-2 rounded-lg shadow-md;
+    }
+    .styled-list li {
+        @apply flex justify-center my-1;
+    }
+    .changelog-section {
+        @apply flex flex-col my-4 py-2 px-5 justify-center bg-black bg-opacity-15 rounded-xl shadow-md;
+    }
+    .changelog-list-item {
+        @apply py-2 border-t-2 border-black border-opacity-50;
+    }
+    .changelog-list-item:first-child {
+        @apply border-t-0;
+    }
+    .changelog-list-item b {
+        @apply text-[16px] flex;
+    }
+    .changelog-list-item ul li {
+        @apply text-[12px] my-1 list-['->'] list-inside ;
+    }
     h1 {
         @apply text-4xl font-bold text-center;
     }

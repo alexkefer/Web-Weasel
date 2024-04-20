@@ -23,7 +23,9 @@ const Navigation = () => {
       onToggle={() => setCollapsed(!collapsed)}
       toggled={toggled}
       toggle={setToggled}
-      className={"bg-black bg-opacity-30 border-r-2 border-gray-300"}
+      className={
+        "bg-black bg-opacity-30 border-r-2 border-gray-300 text-gray-900"
+      }
       style={{ height: "100vh" }}
     >
       <Menu iconShape="square">
