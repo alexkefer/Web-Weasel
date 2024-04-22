@@ -9,8 +9,8 @@ const Layout = ({ children }) => {
         "min-h-screen max-w-screen bg-gradient-to-br from-blue-300 to-purple-400"
       }
     >
-      <div className={"flex"}>
-        <div className={"h-full"}>
+      <div className={"flex flex-row"}>
+        <div>
           <Navigation />
         </div>
         <div className={"flex flex-col mt-4 w-full"}>
