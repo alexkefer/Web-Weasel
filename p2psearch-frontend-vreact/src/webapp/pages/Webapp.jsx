@@ -31,10 +31,10 @@ const Webapp = () => {
             <li>Start caching and sharing web content with your peers.</li>
             <div
               className={
-                "flex flex-row gap-1 bg-black bg-opacity-20 rounded-lg"
+                "flex flex-row gap-1 p-1 bg-black bg-opacity-20 shadow-md rounded-md"
               }
             >
-              <FaExclamation className={"text-red-600 text-lg mt-1 ml-1"} />
+              <FaExclamation className={"text-red-600 text-lg ml-1"} />
               <p>
                 For more detailed instructions on how to use the application,
                 please refer to the{" "}
