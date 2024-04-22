@@ -4,6 +4,10 @@
 package fileData
 
 import (
+	"encoding/json"
+	"github.com/alexkefer/p2psearch-backend/log"
+	"github.com/alexkefer/p2psearch-backend/utils"
+	"os"
 	"sync"
 	"time"
 )
@@ -70,5 +74,64 @@ func (store *FileDataStore) RetrieveFileData(path string) FileData {
 func (store *FileDataStore) StoreFileData(fileData FileData) {
 	store.mutex.Lock()
 	store.data[fileData.Url] = fileData
+	store.mutex.Unlock()
+}
+
+// SaveFileDataStore saves the FileDataStore struct to a metadata file in the cache directory using JSON format.
+func (store *FileDataStore) SaveFileDataStore() {
+	log.Debug("saving resource metadata")
+	store.mutex.RLock()
+
+	cachePath, err := utils.GetCachePath()
+
+	if err == nil {
+		file, fileErr := os.OpenFile(
+			cachePath+string(os.PathSeparator)+"metadata.json",
+			os.O_RDWR|os.O_CREATE,
+			0644)
+
+		if fileErr == nil {
+			encoder := json.NewEncoder(file)
+			encodeErr := encoder.Encode(store.data)
+			if encodeErr != nil {
+				log.Error("problem encoding data store to metadata file: %s", encodeErr)
+			}
+			closeErr := file.Close()
+			if closeErr != nil {
+				log.Warn("problem closing metadata file: %d", closeErr)
+			}
+		} else {
+			log.Error("problem opening metadata file for saving: %s", fileErr)
+		}
+	}
+
+	store.mutex.RUnlock()
+}
+
+// LoadFileData loads resource metadata from the JSON file in the cache directory if it exists into the FileDataStore.
+// This function overwrites any data that is already in the FileDataStore.
+func (store *FileDataStore) LoadFileData() {
+	store.mutex.Lock()
+
+	log.Debug("loading resource metadata from file")
+
+	cachePath, err := utils.GetCachePath()
+	if err == nil {
+		file, fileErr := os.OpenFile(
+			cachePath+string(os.PathSeparator)+"metadata.json",
+			os.O_RDONLY,
+			0644)
+
+		if fileErr == nil {
+			decoder := json.NewDecoder(file)
+			decodeErr := decoder.Decode(&store.data)
+			if decodeErr != nil {
+				log.Warn("problem decoding metadata file: %s", decodeErr)
+			}
+		} else {
+			log.Warn("problem opening metadata file: %s", fileErr)
+		}
+	}
+
 	store.mutex.Unlock()
 }

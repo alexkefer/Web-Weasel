@@ -49,7 +49,8 @@ func main() {
 	peerMap.AddPeer(myPeer)
 
 	fileDataStore := fileData.CreateFileDataStore()
-
+	fileDataStore.LoadFileData()
+	
 	go p2pNetwork.StartServer(myP2PAddr, &peerMap, &fileDataStore)
 	log.Info("my p2p server address: %s", myP2PAddr)
 
@@ -87,4 +88,5 @@ func main() {
 	}
 
 	p2pNetwork.Disconnect(myP2PAddr, &peerMap)
+	fileDataStore.SaveFileDataStore()
 }
