@@ -184,6 +184,17 @@ func disconnectHandler(w http.ResponseWriter, myAddr net.Addr, peerMap *p2pNetwo
 	fmt.Fprintf(w, "disconnecting from p2p network")
 }
 
+func hostnameHandler(w http.ResponseWriter) {
+	name, err := os.Hostname()
+
+	if err == nil {
+		fmt.Fprintf(w, "%s", name)
+	} else {
+		log.Warn("couldn't get hostname: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)
 
