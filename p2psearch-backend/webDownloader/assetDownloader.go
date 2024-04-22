@@ -5,6 +5,7 @@ package webDownloader
 import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"golang.org/x/net/html"
 	"io"
 	"net/http"
@@ -55,8 +56,9 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 							log.Debug("retrieving stylesheet asset: " + link)
 							content, contentType := retrieveAsset(link)
 							if content != nil {
-								SaveFile(content, CleanUrl(link), contentType, fileStore)
-								attr.Val = buildLocalPath(link)
+								filename := utils.UrlToFilename(link)
+								SaveFile(content, filename, contentType, fileStore)
+								attr.Val = "/retrieve?path=" + filename
 								token.Attr[i] = attr
 							}
 						}
@@ -69,8 +71,9 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
-							SaveFile(content, CleanUrl(link), contentType, fileStore)
-							attr.Val = buildLocalPath(link)
+							filename := utils.UrlToFilename(link)
+							SaveFile(content, filename, contentType, fileStore)
+							attr.Val = "/retrieve?path=" + filename
 							token.Attr[i] = attr
 						}
 					}
@@ -82,8 +85,9 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
-							SaveFile(content, CleanUrl(link), contentType, fileStore)
-							attr.Val = buildLocalPath(link)
+							filename := utils.UrlToFilename(link)
+							SaveFile(content, filename, contentType, fileStore)
+							attr.Val = "/retrieve?path=" + filename
 							token.Attr[i] = attr
 						}
 					}

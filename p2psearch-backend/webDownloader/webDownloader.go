@@ -9,6 +9,7 @@ import (
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
+	"github.com/alexkefer/p2psearch-backend/utils"
 	"io"
 	"net/http"
 	"strings"
@@ -21,12 +22,14 @@ func CacheResource(url string, fileDataStore *fileData.FileDataStore) error {
 		return err
 	}
 
+	filename := utils.UrlToFilename(url)
+
 	if strings.Contains(contentType, "text/html") {
 		modifiedHtml := DownloadAllAssets(url, string(content), fileDataStore)
-		SaveFile([]byte(modifiedHtml), CleanUrl(url), fileTypes.Html, fileDataStore)
+		SaveFile([]byte(modifiedHtml), filename, fileTypes.Html, fileDataStore)
 		log.Info("cached webpage at %s", url)
 	} else {
-		SaveFile(content, CleanUrl(url), contentType, fileDataStore)
+		SaveFile(content, filename, contentType, fileDataStore)
 		log.Info("cached resource at %s", url)
 	}
 
