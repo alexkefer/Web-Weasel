@@ -27,6 +27,16 @@
     .changelog-list-item ul li {
         @apply text-[12px] my-1 list-['->'] list-inside ;
     }
+    .settings-section {
+        @apply flex flex-col gap-y-5 p-2 bg-black bg-opacity-15 rounded-xl shadow-md;
+    }
+    .settings-section p {
+        @apply text-[12px] text-left mx-2 border-b-2 border-gray-800 text-gray-800;
+    }
+    .setting-container {
+        @apply flex px-2 py-2 mt-2 justify-between bg-black bg-opacity-15 rounded-lg shadow-md;
+    }
+
     h1 {
         @apply text-4xl font-bold text-center;
     }
@@ -40,6 +50,6 @@
         @apply text-xl font-bold text-center;
     }
     p {
-        @apply text-lg text-center;
+        @apply text-center;
     }
 }

@@ -6,7 +6,7 @@ import { FaExclamation } from "react-icons/fa";
 const Webapp = () => {
   return (
     <Layout>
-      <div className="flex flex-col gap-y-5 ml-2">
+      <div className="flex flex-col gap-y-5">
         <h2 className={"text-2xl"}>Welcome to Peer-to-Peer Web Cache</h2>
         <p>
           This web application allows you to create a decentralized web cache

@@ -3,9 +3,8 @@ import Layout from "../Layout.jsx";
 const Settings = () => {
   return (
     <Layout>
-      <section className="settings-section">
-        <h2>Settings</h2>
-
+      <h1>Settings</h1>
+      <section className="settings-section mt-2">
         <div className="setting-container">
           <span className="label-text">Request Private Connections</span>
           <div className="slider-container">
@@ -20,7 +19,6 @@ const Settings = () => {
         <p className="setting-description">
           When enabled, only accept connection requests from approved users.
         </p>
-
         <div className="setting-container">
           <span className="label-text">Hide Public Device Name</span>
           <div className="slider-container">
