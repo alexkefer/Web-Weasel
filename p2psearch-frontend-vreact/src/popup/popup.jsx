@@ -1,13 +1,85 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./popup.css";
-// I added react-switch package, we should consider switching to their switch in order to simplify our codebase.
 
 function Popup() {
   const [deviceInfo, setDeviceInfo] = useState({
-    deviceName: generateRandomName(),
-    ipAddress: generateRandomIP(),
-    nearestNode: generateRandomNode(),
+    deviceName: "",
+    ipAddress: "",
+    nearestNode: "",
   });
+
+  useEffect(() => {
+    fetchAndDisplayHostname();
+    fetchAndDisplayNodeIPAddress();
+    fetchAndDisplayPeersIPAddress();
+  }, []);
+
+  const fetchAndDisplayHostname = () => {
+    fetch('http://localhost:8080/hostname')
+      .then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('Failed to fetch hostname data');
+        }
+      })
+      .then(hostname => {
+        setDeviceInfo(prevState => ({
+          ...prevState,
+          deviceName: hostname
+        }));
+        localStorage.setItem('hostname', hostname);
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+  };
+
+  const fetchAndDisplayNodeIPAddress = () => {
+    fetch('http://localhost:8080/peers')
+      .then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('Failed to fetch node IP address data');
+        }
+      })
+      .then(nodeIPAddress => {
+        const lines = nodeIPAddress.split('\n');
+        const firstLine = lines[0].trim();
+        setDeviceInfo(prevState => ({
+          ...prevState,
+          ipAddress: firstLine
+        }));
+        localStorage.setItem('nodeIPAddress', firstLine);
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+  };
+
+  const fetchAndDisplayPeersIPAddress = () => {
+    fetch('http://localhost:8080/peers')
+      .then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('Failed to fetch peer IP address data');
+        }
+      })
+      .then(nodeIPAddress => {
+        const lines = nodeIPAddress.split('\n');
+        const otherLines = lines.slice(1).map(line => line.trim());
+        setDeviceInfo(prevState => ({
+          ...prevState,
+          nearestNode: otherLines.join(', ')
+        }));
+        localStorage.setItem('peerIPAddress', otherLines.join(', '));
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+  };
 
   const toggleIcon = () => {
     const iconImg = document.querySelector(".icon-img");
@@ -15,34 +87,34 @@ function Popup() {
       ? "../../images/off_power_icon.png"
       : "../../images/on_power_icon.png";
 
-    const randomData = {
-      deviceName: generateRandomName(),
-      ipAddress: generateRandomIP(),
-      nearestNode: generateRandomNode(),
-    };
-
-    console.log("Received data:", randomData);
-
     toggleDeviceInfoVisibility(
-      iconImg.src.includes("on_power_icon.png"),
-      randomData,
+      iconImg.src.includes("on_power_icon.png")
     );
   };
 
-  const toggleDeviceInfoVisibility = (isIconOn, data) => {
-    console.log("isIconOn:", isIconOn);
-    console.log("Data:", data);
-
-    if (isIconOn && data) {
-      setDeviceInfo(data);
-    } else {
+  const toggleDeviceInfoVisibility = (isIconOn) => {
+    if (!isIconOn) {
+      // If icon is turned off, clear all device information
       setDeviceInfo({
         deviceName: "",
         ipAddress: "",
-        nearestNode: "",
+        nearestNode: ""
+      });
+    } else {
+      // If icon is turned on, display the previously fetched device information
+      const storedHostname = localStorage.getItem('hostname');
+      const storedNodeIPAddress = localStorage.getItem('nodeIPAddress');
+      const storedPeerIPAddress = localStorage.getItem('peerIPAddress');
+      
+      setDeviceInfo({
+        deviceName: storedHostname || "",
+        ipAddress: storedNodeIPAddress || "",
+        nearestNode: storedPeerIPAddress || ""
       });
     }
   };
+  
+  
 
   return (
     <div>
@@ -51,10 +123,10 @@ function Popup() {
           Public Device Name: {deviceInfo.deviceName}
         </span>
         <span className="ip-adr-text">
-          Node IP Address: {deviceInfo.ipAddress}
+          Host IP Address: {deviceInfo.ipAddress}
         </span>
         <span className="neighbor-ip-text">
-          Nearest Connection Node: {deviceInfo.nearestNode}
+          Peers IP Address: {deviceInfo.nearestNode}
         </span>
       </label>
 
@@ -114,22 +186,3 @@ function Popup() {
 }
 
 export default Popup;
-
-// Function to generate a random name
-function generateRandomName() {
-  const names = ["MyNetwork1"];
-  return names[Math.floor(Math.random() * names.length)];
-}
-
-// Function to generate a random IP address (for illustration purposes)
-function generateRandomIP() {
-  const baseIP = "192.168.0.";
-  const randomOctet = Math.floor(Math.random() * 255) + 1; // Generate a random number between 1 and 255
-  return baseIP + randomOctet;
-}
-
-// Function to generate a random nearest connection node (for illustration purposes)
-function generateRandomNode() {
-  const nodes = [""];
-  return nodes[Math.floor(Math.random() * nodes.length)];
-}

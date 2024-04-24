@@ -28,6 +28,8 @@ label {
 .ip-adr-text,
 .neighbor-ip-text {
   margin-bottom: 5px;
+  width: 200px;
+  display: inline-block;
 }
 
 /* Styling for the icon */
