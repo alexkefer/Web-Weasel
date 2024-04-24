@@ -9,10 +9,15 @@ function Popup() {
   });
 
   useEffect(() => {
+    clearLocalStorage();
     fetchAndDisplayHostname();
     fetchAndDisplayNodeIPAddress();
     fetchAndDisplayPeersIPAddress();
   }, []);
+
+  const clearLocalStorage = () => {
+    localStorage.clear();
+  }
 
   const fetchAndDisplayHostname = () => {
     fetch('http://localhost:8080/hostname')

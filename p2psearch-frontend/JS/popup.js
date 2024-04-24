@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   var iconButton = document.getElementById('iconButton');
+  // Clear localStorage on startup
+  clearLocalStorage();
 
   // Fetch and display hostname initially
   fetchAndDisplayHostname();
@@ -19,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleDeviceInfoVisibility(iconImg.src.includes('on_power_icon.png'));
   });
 });
+
+function clearLocalStorage() {
+  localStorage.clear();
+}
 
 function fetchAndDisplayHostname() {
   // Fetch hostname from server
