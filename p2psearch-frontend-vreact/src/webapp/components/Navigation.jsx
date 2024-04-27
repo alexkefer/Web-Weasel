@@ -14,17 +14,19 @@ const Navigation = () => {
   };
 
   return (
-    <div>
+    <div className={"h-full"}>
       <Sidebar
         width={"225px"}
         collapsedWidth={"60px"}
         collapsed={collapsed}
         rootStyles={{
           zIndex: 1000,
-          height: "100vh",
+          height: "inherit",
+          cursor: "pointer",
         }}
         backgroundColor={"rgba(0, 0, 0, 0.10)"}
         className={"bg-black bg-opacity-25"}
+        onClick={collapseSidebar}
       >
         <Menu
           iconShape="square"
@@ -46,21 +48,10 @@ const Navigation = () => {
         >
           <div className={"font-semibold text-xl flex justify-center my-2"}>
             {collapsed ? (
-              <IoMenu
-                className={
-                  "text-4xl transition hover:bg-black hover:bg-opacity-10 rounded-md p-0.5"
-                }
-                onClick={collapseSidebar}
-              />
+              <IoMenu className={"text-4xl"} />
             ) : (
               <div className={"flex gap-2"}>
                 <h3>P2P Web Cache</h3>
-                <IoMenu
-                  className={
-                    "text-4xl transition hover:bg-black hover:bg-opacity-10 rounded-md p-0.5 -mt-0.5"
-                  }
-                  onClick={collapseSidebar}
-                />
               </div>
             )}
           </div>

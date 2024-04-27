@@ -6,15 +6,15 @@ const Layout = ({ children }) => {
   return (
     <div
       className={
-        "min-h-screen max-w-screen bg-gradient-to-br from-blue-300 to-purple-400"
+        "min-h-screen max-w-screen bg-gradient-to-br from-blue-200 to-purple-200"
       }
     >
       <div className={"flex flex-row"}>
         <div>
           <Navigation />
         </div>
-        <div className={"flex flex-col mt-4 w-full"}>
-          <main className={"flex-grow mx-full mx-4"}>{children}</main>
+        <div className={"flex flex-col pt-4 w-full min-h-screen"}>
+          <main className={"flex-grow mx-4"}>{children}</main>
           <div className="my-auto bg-black bg-opacity-30">
             <Footer />
           </div>

@@ -6,15 +6,15 @@ import { FaExclamation } from "react-icons/fa";
 const Webapp = () => {
   return (
     <Layout>
-      <div className="flex flex-col gap-y-5">
-        <h2 className={"text-2xl"}>Welcome to Peer-to-Peer Web Cache</h2>
+      <div className="flex flex-col gap-y-5 max-w-3xl max-lg:max-w-lg mx-auto">
+        <h1 className={"text-2xl"}>Welcome to Peer-to-Peer Web Cache</h1>
         <p>
           This web application allows you to create a decentralized web cache
           network with your peers.
         </p>
         <div className={"flex flex-col gap-2 justify-between"}>
           <ul className={"styled-list"}>
-            <h3 className={"text-xl"}>Features:</h3>
+            <h2 className={"text-xl"}>Features:</h2>
             <li>Decentralized caching of web content</li>
             <li>
               Reduced bandwidth usage by sharing cached content with peers
@@ -25,13 +25,13 @@ const Webapp = () => {
         </div>
         <div className={"flex flex-col gap-2 justify-between"}>
           <ol className={"styled-list"}>
-            <h3 className={"text-xl"}>How to Use:</h3>
+            <h2 className={"text-xl"}>How to Use:</h2>
             <li>Download and install the application on your device.</li>
             <li>Create or join a peer network.</li>
             <li>Start caching and sharing web content with your peers.</li>
             <div
               className={
-                "flex flex-row gap-1 p-1 bg-black bg-opacity-20 shadow-md rounded-md"
+                "flex flex-row gap-2 p-2.5 bg-black bg-opacity-20 shadow-md rounded-md"
               }
             >
               <FaExclamation className={"text-red-600 text-lg ml-1"} />

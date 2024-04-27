@@ -30,15 +30,6 @@
     .changelog-list-item ul li {
         @apply text-[12px] my-1 list-['->'] list-inside ;
     }
-    .settings-section {
-        @apply flex flex-col gap-y-5 p-2 bg-black bg-opacity-15 rounded-md shadow-md;
-    }
-    .settings-section p {
-        @apply text-[12px] text-left mx-2 border-b-2 border-gray-800 text-gray-800;
-    }
-    .setting-container {
-        @apply flex px-2 p-2 justify-between bg-black bg-opacity-15 rounded-md shadow-md;
-    }
     .resource-item {
         @apply flex flex-row max-w-md px-4 py-4 gap-x-2 justify-around text-lg bg-black bg-opacity-15 rounded-md shadow-md mt-10 hover:shadow-xl hover:bg-emerald-600 hover:underline hover:scale-105 transition;
     }
@@ -55,6 +46,6 @@
         @apply text-xl font-bold text-center;
     }
     p {
-        @apply text-center;
+        @apply text-center text-[14px];
     }
 }
