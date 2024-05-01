@@ -48,4 +48,16 @@
     p {
         @apply text-center text-[14px];
     }
+    .tutorial-ordered-list {
+        @apply list-inside list-decimal;
+    }
+    .tutorial-ordered-list li {
+        @apply pl-2 text-[14px] mb-2;
+    }
+    .tutorial-unordered-list {
+        @apply list-inside list-disc;
+    }
+    .tutorial-unordered-list li {
+        @apply pl-2 text-[14px] mb-2;
+    }
 }
