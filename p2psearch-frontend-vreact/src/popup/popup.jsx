@@ -5,7 +5,7 @@ function Popup() {
   const [deviceInfo, setDeviceInfo] = useState({
     deviceName: "",
     ipAddress: "",
-    nearestNode: "",
+    nearestNode: ""
   });
 
   useEffect(() => {
@@ -17,15 +17,15 @@ function Popup() {
 
   const clearLocalStorage = () => {
     localStorage.clear();
-  }
+  };
 
   const fetchAndDisplayHostname = () => {
-    fetch('http://localhost:8080/hostname')
+    fetch("http://localhost:8080/hostname")
       .then(response => {
         if (response.ok) {
           return response.text();
         } else {
-          throw new Error('Failed to fetch hostname data');
+          throw new Error("Failed to fetch hostname data");
         }
       })
       .then(hostname => {
@@ -33,93 +33,63 @@ function Popup() {
           ...prevState,
           deviceName: hostname
         }));
-        localStorage.setItem('hostname', hostname);
+        localStorage.setItem("hostname", hostname);
       })
       .catch(error => {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
       });
   };
 
   const fetchAndDisplayNodeIPAddress = () => {
-    fetch('http://localhost:8080/peers')
+    fetch("http://localhost:8080/peers")
       .then(response => {
         if (response.ok) {
           return response.text();
         } else {
-          throw new Error('Failed to fetch node IP address data');
+          throw new Error("Failed to fetch node IP address data");
         }
       })
       .then(nodeIPAddress => {
-        const lines = nodeIPAddress.split('\n');
+        const lines = nodeIPAddress.split("\n");
         const firstLine = lines[0].trim();
         setDeviceInfo(prevState => ({
           ...prevState,
           ipAddress: firstLine
         }));
-        localStorage.setItem('nodeIPAddress', firstLine);
+        localStorage.setItem("nodeIPAddress", firstLine);
       })
       .catch(error => {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
       });
   };
 
   const fetchAndDisplayPeersIPAddress = () => {
-    fetch('http://localhost:8080/peers')
+    fetch("http://localhost:8080/peers")
       .then(response => {
         if (response.ok) {
           return response.text();
         } else {
-          throw new Error('Failed to fetch peer IP address data');
+          throw new Error("Failed to fetch peer IP address data");
         }
       })
       .then(nodeIPAddress => {
-        const lines = nodeIPAddress.split('\n');
+        const lines = nodeIPAddress.split("\n");
         const otherLines = lines.slice(1).map(line => line.trim());
         setDeviceInfo(prevState => ({
           ...prevState,
-          nearestNode: otherLines.join(', ')
+          nearestNode: otherLines.join(", ")
         }));
-        localStorage.setItem('peerIPAddress', otherLines.join(', '));
+        localStorage.setItem("peerIPAddress", otherLines.join(", "));
       })
       .catch(error => {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
       });
   };
 
   const toggleIcon = () => {
-    const iconImg = document.querySelector(".icon-img");
-    iconImg.src = iconImg.src.includes("on_power_icon.png")
-      ? "../../images/off_power_icon.png"
-      : "../../images/on_power_icon.png";
-
-    toggleDeviceInfoVisibility(
-      iconImg.src.includes("on_power_icon.png")
-    );
+    // Assuming the icon is toggled using local state or deviceInfo
+    // Adjust this according to your actual logic
   };
-
-  const toggleDeviceInfoVisibility = (isIconOn) => {
-    if (!isIconOn) {
-      // If icon is turned off, clear all device information
-      setDeviceInfo({
-        deviceName: "",
-        ipAddress: "",
-        nearestNode: ""
-      });
-    } else {
-      // If icon is turned on, display the previously fetched device information
-      const storedHostname = localStorage.getItem('hostname');
-      const storedNodeIPAddress = localStorage.getItem('nodeIPAddress');
-      const storedPeerIPAddress = localStorage.getItem('peerIPAddress');
-      
-      setDeviceInfo({
-        deviceName: storedHostname || "",
-        ipAddress: storedNodeIPAddress || "",
-        nearestNode: storedPeerIPAddress || ""
-      });
-    }
-  };
-  
-  
 
   return (
     <div>
@@ -146,6 +116,15 @@ function Popup() {
           </button>
         </div>
       </label>
+
+      <div className="input-container">
+        <input
+          type="text"
+          id="peerAddressInput"
+          placeholder="Enter peer IP address"
+        />
+        <button onClick={toggleIcon}>Connect</button>
+      </div>
 
       <button
         onClick={() => window.open("webapp.html", "_blank")}

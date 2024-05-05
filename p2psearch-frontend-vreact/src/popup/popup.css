@@ -138,3 +138,17 @@ input:checked + .slider:before {
 .custom-button a:hover {
   text-decoration: underline; /* Add underline on hover if needed */
 }
+
+.input-container {
+  text-align: center;
+  margin-bottom: 10px; /* Adjust margin as needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input-container label,
+.input-container input,
+.input-container button {
+  margin: 5px auto; /* Center align elements horizontally */
+}
