@@ -70,7 +70,10 @@ const Caching = () => {
 
   return (
     <Layout>
-      <div id="downloadContainer">
+      <div
+        id="downloadContainer"
+        className="flex flex-col gap-y-5 max-w-3xl max-lg:max-w-lg mx-auto"
+      >
         <h1 className={"text-3xl"}>Web Caching</h1>
         <div className={"input-container"}>
           <label htmlFor="urlInput">Enter web page URL:</label>
@@ -84,7 +87,9 @@ const Caching = () => {
             Download
           </button>
         </div>
-        <p id="output">{outputMessage}</p>
+        <p id="output" className={"response-message"}>
+          {outputMessage}
+        </p>
         <div className={"saved-pages"}>
           <h2 className={"text-2xl"}>Saved Webpages</h2>
           <p>
