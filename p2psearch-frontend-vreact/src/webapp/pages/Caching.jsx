@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Layout from "../Layout.jsx";
 
 const Caching = () => {
@@ -49,7 +49,8 @@ const Caching = () => {
 
     updateAndStoreUrlList();
 
-    const url = "http://localhost:8080/cache?path=" + encodeURIComponent(urlInput);
+    const url =
+      "http://localhost:8080/cache?path=" + encodeURIComponent(urlInput);
 
     fetch(url, { mode: "no-cors" })
       .then((response) => {
@@ -70,29 +71,41 @@ const Caching = () => {
   return (
     <Layout>
       <div id="downloadContainer">
-        <h1>Web Caching</h1>
-        <label htmlFor="urlInput">Enter URL:</label>
-        <input
-          type="text"
-          id="urlInput"
-          value={urlInput}
-          onChange={(e) => setUrlInput(e.target.value)}
-        />
-        <button id="fetchButton" onClick={handleFetchButtonClick}>
-          Fetch
-        </button>
+        <h1 className={"text-3xl"}>Web Caching</h1>
+        <div className={"input-container"}>
+          <label htmlFor="urlInput">Enter web page URL:</label>
+          <input
+            type="text"
+            id="urlInput"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+          />
+          <button id="fetchButton" onClick={handleFetchButtonClick}>
+            Download
+          </button>
+        </div>
         <p id="output">{outputMessage}</p>
-        <h2>Saved URL</h2>
-        <ul id="urlList">
-          {urlList.map((url) => (
-            <li key={url}>
-              <a href={"http://localhost:8080/retrieve?path=" + url} target="_blank" rel="noopener noreferrer">
-                {url}
-              </a>
-              <button onClick={() => clearUrl(url)}>Clear</button>
-            </li>
-          ))}
-        </ul>
+        <div className={"saved-pages"}>
+          <h2 className={"text-2xl"}>Saved Webpages</h2>
+          <p>
+            Click on the URL to view the cached webpage. Click "Clear" to remove
+            the URL from the list.
+          </p>
+          <ul id="urlList">
+            {urlList.map((url) => (
+              <li key={url}>
+                <a
+                  href={"http://localhost:8080/retrieve?path=" + url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {url}
+                </a>
+                <button onClick={() => clearUrl(url)}>Clear</button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </Layout>
   );
