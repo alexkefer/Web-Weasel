@@ -7,6 +7,7 @@ function Popup() {
     ipAddress: "",
     nearestNode: ""
   });
+  const [peerAddress, setPeerAddress] = useState(""); // State to store peer address
 
   useEffect(() => {
     clearLocalStorage();
@@ -91,6 +92,26 @@ function Popup() {
     // Adjust this according to your actual logic
   };
 
+  const handlePeerAddressChange = (event) => {
+    setPeerAddress(event.target.value);
+  };
+
+  const connectToPeer = () => {
+    var connectURL = 'http://localhost:8080/connect?path=' + peerAddress;
+
+    fetch(connectURL)
+      .then(response => {
+        if (response.ok) {
+          console.log('Connected to peer successfully');
+        } else {
+          throw new Error('Failed to connect to peer');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+  };
+
   return (
     <div>
       <label className="user-info">
@@ -122,8 +143,10 @@ function Popup() {
           type="text"
           id="peerAddressInput"
           placeholder="Enter peer IP address"
+          value={peerAddress}
+          onChange={handlePeerAddressChange}
         />
-        <button onClick={toggleIcon}>Connect</button>
+        <button onClick={connectToPeer}>Connect</button>
       </div>
 
       <button
