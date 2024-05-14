@@ -195,6 +195,14 @@ func hostnameHandler(w http.ResponseWriter) {
 	}
 }
 
+func resourcesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
+	store.Mutex.RLock()
+	for _, data := range store.Data {
+		fmt.Fprintf(w, "%s\n", data.Url)
+	}
+	store.Mutex.RUnlock()
+}
+
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)
 
