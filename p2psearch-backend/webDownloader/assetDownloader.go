@@ -38,6 +38,8 @@ func retrieveAsset(url string) ([]byte, string) {
 func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStore) string {
 	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
 	modifiedHtml := ""
+	log.Error("content url: %s", url)
+	shortUrl := shortenUrl(url)
 
 	for {
 		tokenType := tokenizer.Next()
@@ -51,15 +53,30 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 				for i, attr := range token.Attr {
 					if attr.Key == "href" {
 						rel, ok := getAttributeValue(token, "rel")
-						if ok && (rel == "stylesheet") {
-							link := url + attr.Val
-							log.Debug("retrieving stylesheet asset: " + link)
-							content, contentType := retrieveAsset(link)
-							if content != nil {
-								filename := utils.UrlToFilename(link)
-								SaveFile(content, filename, contentType, fileStore)
-								attr.Val = "/retrieve?path=" + filename
-								token.Attr[i] = attr
+						if ok {
+							if rel == "stylesheet" {
+								link := shortUrl + attr.Val
+								log.Debug("retrieving stylesheet asset: " + link)
+								content, contentType := retrieveAsset(link)
+								if content != nil {
+									filename := utils.UrlToFilename(link)
+									SaveFile(content, filename, contentType, fileStore)
+									attr.Val = "/retrieve?path=" + filename
+									token.Attr[i] = attr
+								}
+							} else if rel == "preload" {
+								as, ok := getAttributeValue(token, "as")
+								if ok && (as == "style") {
+									link := shortUrl + attr.Val
+									log.Debug("retrieving stylesheet asset: " + link)
+									content, contentType := retrieveAsset(link)
+									if content != nil {
+										filename := utils.UrlToFilename(link)
+										SaveFile(content, filename, contentType, fileStore)
+										attr.Val = "/retrieve?path=" + filename
+										token.Attr[i] = attr
+									}
+								}
 							}
 						}
 					}
@@ -67,7 +84,7 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 			case "script": // Download JS
 				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						link := url + attr.Val
+						link := shortUrl + attr.Val
 						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
@@ -81,7 +98,7 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 			case "img": // Download Images
 				for i, attr := range token.Attr {
 					if attr.Key == "src" {
-						link := url + attr.Val
+						link := shortUrl + attr.Val
 						log.Debug("retrieving Asset: " + link)
 						content, contentType := retrieveAsset(link)
 						if content != nil {
@@ -129,36 +146,24 @@ func getAttributeValue(token html.Token, key string) (string, bool) {
 	return "", false
 }
 
-func trimLongURL(url string) string {
-	// takes in url and returns the trimmed url
-	if len(url) > 50 {
-		return url[:50]
-	}
-	return url
-}
-
-func buildPageUrl(url string, assetUrl string) string {
-	// takes in the source url and the asset url and returns the full url
-	if strings.HasPrefix(assetUrl, "http://") || strings.HasPrefix(assetUrl, "https://") {
-		return assetUrl
-	}
-	if strings.HasPrefix(assetUrl, "//") {
-		assetUrl = "https:" + assetUrl
-	} else if assetUrl[0] == '/' {
-		assetUrl = parsePageSource(parsePageLocation(url)) + assetUrl
-	} else {
-		for i := 0; i < len(assetUrl); i++ {
-			if assetUrl[i] == '.' {
-				assetUrl = "https://" + assetUrl
-				break
-			}
-			if assetUrl[i] == '/' {
-				assetUrl = parsePageSource(parsePageLocation(url)) + assetUrl
-				break
-			}
+func shortenUrl(fullUrl string) string {
+	cutUrl, cut := strings.CutPrefix(fullUrl, "https://")
+	if cut {
+		front, _, found := strings.Cut(cutUrl, "/")
+		if found {
+			return "https://" + front + "/"
 		}
 	}
-	return assetUrl
+
+	cutUrl, cut = strings.CutPrefix(fullUrl, "http://")
+	if cut {
+		front, _, found := strings.Cut(cutUrl, "/")
+		if found {
+			return "https://" + front + "/"
+		}
+	}
+
+	return fullUrl
 }
 
 func parsePageSource(url string) string {
