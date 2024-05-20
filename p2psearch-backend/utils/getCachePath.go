@@ -18,8 +18,8 @@ func GetCachePath() (string, error) {
 	switch runtime.GOOS {
 	case "windows":
 		// Maybe on windows this should be somewhere else like appdata?
-		return home + "\\p2pwebcache", err
+		return home + "\\webweasel", err
 	default:
-		return home + "/.cache/p2pwebcache", err
+		return home + "/.cache/webweasel", err
 	}
 }
