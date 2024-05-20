@@ -53,6 +53,10 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataSt
 		resourcesHandler(w, fileDataStore)
 	})
 
+	http.HandleFunc("/sites", func(w http.ResponseWriter, r *http.Request) {
+		sitesHandler(w, fileDataStore)
+	})
+
 	if port == "" {
 		var err error
 		port, err = utils.FindOpenPort(8080, 8180)

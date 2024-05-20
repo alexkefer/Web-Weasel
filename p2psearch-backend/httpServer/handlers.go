@@ -3,6 +3,7 @@ package httpServer
 import (
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
+	"github.com/alexkefer/p2psearch-backend/fileTypes"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"github.com/alexkefer/p2psearch-backend/p2pNetwork"
 	"github.com/alexkefer/p2psearch-backend/utils"
@@ -199,6 +200,16 @@ func resourcesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
 	store.Mutex.RLock()
 	for _, data := range store.Data {
 		fmt.Fprintf(w, "%s\n", data.Url)
+	}
+	store.Mutex.RUnlock()
+}
+
+func sitesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
+	store.Mutex.RLock()
+	for _, data := range store.Data {
+		if data.FileType == fileTypes.Html {
+			fmt.Fprintf(w, "%s\n", data.Url)
+		}
 	}
 	store.Mutex.RUnlock()
 }
