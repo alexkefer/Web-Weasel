@@ -66,6 +66,15 @@ const Caching = () => {
     if (!urlInput.startsWith("http://") && !urlInput.startsWith("https://")) {
       urlInput = "https://" + urlInput;
     }
+    // Trim "www" from the URL if it's present
+    if (urlInput.includes('www.')) {
+      urlInput = urlInput.replace('www.', '');
+    }
+
+    // Trim final "/" from the URL if it's present
+    if (urlInput.endsWith('/')) {
+        urlInput = urlInput.slice(0, -1);
+    }
 
     // Validate the URL
     if (!urlRegex.test(urlInput)) {
