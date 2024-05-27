@@ -21,7 +21,8 @@ window.addEventListener('load', function() {
 
 // Function to clear a specific URL from the list and update the display
 function clearUrl(url) {
-    const trimmedUrl = url.replace(/^https?:\/\//, '');
+    // Trim off "https://" and "www." from the URL
+    const trimmedUrl = url.replace(/^(https?:\/\/)?(www\.)?/, '');
     fetch('http://localhost:8080/removeSite?url=' + trimmedUrl, {
         method: 'GET', // or 'DELETE' if supported by the server
     })
@@ -54,8 +55,8 @@ function displayUrlList() {
 
     // Add each URL as a new list item with an active link
     urlList.forEach(url => {
-        // Trim off "https://" from the URL
-        const trimmedUrl = url.replace(/^https?:\/\//, '');
+        // Trim off "https://" and "www." from the URL
+        const trimmedUrl = url.replace(/^(https?:\/\/)?(www\.)?/, '');
 
         const listItem = document.createElement('li');
         const link = document.createElement('a');
@@ -131,6 +132,15 @@ document.getElementById('fetchButton').addEventListener('click', function() {
     if (!urlInput.startsWith('http://') && !urlInput.startsWith('https://')) {
         urlInput = 'https://' + urlInput;
     }
+    // Trim "www" from the URL if it's present
+    if (urlInput.includes('www.')) {
+        urlInput = urlInput.replace('www.', '');
+    }
+
+    // Trim final "/" from the URL if it's present
+    if (urlInput.endsWith('/')) {
+        urlInput = urlInput.slice(0, -1);
+    }
 
     // Validate the URL
     if (!urlRegex.test(urlInput)) {
@@ -147,9 +157,7 @@ document.getElementById('fetchButton').addEventListener('click', function() {
     // Push the valid URL to the urlList array
     urlList.push(urlInput);
 
-    const url = 'http://localhost:8080/cache?path=' + encodeURIComponent(urlInput);
-
-    fetch(url, { mode: 'no-cors' })
+    fetch('http://localhost:8080/cache?path=' + encodeURIComponent(urlInput), { mode: 'no-cors' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
