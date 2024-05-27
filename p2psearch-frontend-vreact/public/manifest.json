@@ -5,12 +5,10 @@
   "description": "P2P Web Cache Front End Extension",
   "permissions": [
     "activeTab",
-    "storage",
     "http://localhost:8080/*"
   ],
   "host_permissions": [
     "activeTab",
-    "storage",
     "http://localhost:8080/*"
   ],
   "action": {

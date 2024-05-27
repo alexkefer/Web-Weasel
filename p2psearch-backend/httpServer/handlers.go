@@ -214,6 +214,36 @@ func sitesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
 	store.Mutex.RUnlock()
 }
 
+func removeSiteHandler(w http.ResponseWriter, r *http.Request, store *fileData.FileDataStore) {
+	// Parse the URL query parameters
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Failed to parse query parameters: %s", err)
+		log.Warn("failed to parse query parameters: %s", err)
+		return
+	}
+
+	urlToRemove := params.Get("url")
+
+	store.Mutex.Lock()
+	defer store.Mutex.Unlock()
+
+	// Remove the specified URL from the map
+	if _, exists := store.Data[urlToRemove]; exists {
+		delete(store.Data, urlToRemove)
+		fmt.Fprintf(w, "Removed site: %s", urlToRemove)
+		log.Info("removed site: %s", urlToRemove)
+		return
+	}
+
+	// If no matching URL found
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprintf(w, "Site not found: %s", urlToRemove)
+	log.Warn("site not found: %s", urlToRemove)
+}
+
+
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)
 

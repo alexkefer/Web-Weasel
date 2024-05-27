@@ -9,45 +9,79 @@ const Caching = () => {
   // State for output message
   const [outputMessage, setOutputMessage] = useState("");
 
-  // Retrieve stored URL list from localStorage on component mount
+  // Function to retrieve stored URL list from the server on page load
   useEffect(() => {
-    const storedUrlList = JSON.parse(localStorage.getItem("urlList"));
-    if (storedUrlList) {
-      setUrlList(storedUrlList);
-    }
+    fetch("http://localhost:8080/sites")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.text(); // Get the response as plain text
+      })
+      .then((text) => {
+        const storedUrlList = text
+          .split("\n")
+          .filter((url) => url.trim() !== "");
+        if (storedUrlList.length > 0) {
+          setUrlList(storedUrlList);
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "There was a problem with fetching the URL list:",
+          error
+        );
+      });
   }, []);
 
-  // Function to update and store the URL list in localStorage
-  const updateAndStoreUrlList = () => {
-    localStorage.setItem("urlList", JSON.stringify(urlList));
-  };
-
-  // Function to clear a specific URL from the list
+  // Function to clear a specific URL from the list and update the display
   const clearUrl = (url) => {
-    const updatedUrlList = urlList.filter((u) => u !== url);
-    setUrlList(updatedUrlList);
-    updateAndStoreUrlList();
+    const trimmedUrl = url.replace(/^https?:\/\//, "");
+    fetch("http://localhost:8080/removeSite?url=" + trimmedUrl, {
+      method: "GET", // or 'DELETE' if supported by the server
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        // Remove the URL from the local list and update the display
+        const updatedUrlList = urlList.filter((u) => u !== url);
+        setUrlList(updatedUrlList);
+        // Display output message
+        setOutputMessage("URL successfully removed: " + url);
+      })
+      .catch((error) => {
+        console.error("There was a problem with removing the URL:", error);
+      });
   };
 
   // Function to handle fetch button click
   const handleFetchButtonClick = () => {
+    let urlInput = document.getElementById("urlInput").value.trim();
+
+    // Regular expression to match URL pattern
     const urlRegex = /^(https?|http):\/\/[^\s$.?#].[^\s]*$/i;
 
-    if (!urlInput || !urlRegex.test(urlInput)) {
+    // Automatically prepend "https://" if missing
+    if (!urlInput.startsWith("http://") && !urlInput.startsWith("https://")) {
+      urlInput = "https://" + urlInput;
+    }
+
+    // Validate the URL
+    if (!urlRegex.test(urlInput)) {
       setOutputMessage("Please enter a valid URL.");
       return;
     }
 
+    // Check if the URL is already in the list
     if (urlList.includes(urlInput)) {
       setOutputMessage("URL is already in the list.");
       return;
     }
 
-    const updatedUrlList = [...urlList, urlInput];
-    setUrlList(updatedUrlList);
+    // Push the valid URL to the urlList array
+    setUrlList([...urlList, urlInput]);
     setUrlInput(""); // Clear input field
-
-    updateAndStoreUrlList();
 
     const url =
       "http://localhost:8080/cache?path=" + encodeURIComponent(urlInput);
@@ -61,10 +95,13 @@ const Caching = () => {
       })
       .then((data) => {
         console.log("Cached URL:", data);
-        setOutputMessage("Cached URL: " + data);
+        setOutputMessage("Cached URL: " + data); // Set the message
       })
       .catch((error) => {
-        console.error("There was a problem with your fetch operation:", error);
+        console.error(
+          "There was a problem with your fetch operation:",
+          error
+        );
       });
   };
 
@@ -104,7 +141,7 @@ const Caching = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {url}
+                  {url.replace(/^https?:\/\//, "")}
                 </a>
                 <button onClick={() => clearUrl(url)}>Clear</button>
               </li>

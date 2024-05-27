@@ -5,7 +5,6 @@
   "description": "A simple Chrome extension with an on/off button",
   "permissions": [
     "activeTab",
-    "storage",
     "http://localhost:8080/*"
   ],
   "browser_action": {

@@ -57,6 +57,11 @@ func StartServer(peerMap *p2pNetwork.PeerMap, fileDataStore *fileData.FileDataSt
 		sitesHandler(w, fileDataStore)
 	})
 
+	http.HandleFunc("/removeSite", func(w http.ResponseWriter, r *http.Request) {
+		removeSiteHandler(w, r, fileDataStore)
+	})	
+	
+
 	if port == "" {
 		var err error
 		port, err = utils.FindOpenPort(8080, 8180)
