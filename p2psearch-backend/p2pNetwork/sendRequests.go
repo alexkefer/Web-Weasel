@@ -125,6 +125,42 @@ func SendFileRequest(to net.Addr, from net.Addr, path string) (*Message, error) 
 	sendErr := SendMessage(conn, message)
 
 	if sendErr != nil {
+		_ = conn.Close()
+		return nil, sendErr
+	}
+
+	message, recvErr := ReceiveMessage(conn)
+
+	if recvErr != nil {
+		_ = conn.Close()
+		return &message, recvErr
+	}
+
+	closeErr := conn.Close()
+
+	if closeErr != nil {
+		log.Warn("error closing connection: %s", closeErr)
+	}
+
+	return &message, nil
+}
+
+func SendShareFileDataRequest(to net.Addr, from net.Addr) (*Message, error) {
+	conn, connErr := utils.MakeTcpConnection(to)
+
+	if connErr != nil {
+		return nil, connErr
+	}
+
+	var message = Message{
+		Code:       ShareFileDataRequest,
+		SenderAddr: from.String(),
+	}
+
+	sendErr := SendMessage(conn, message)
+
+	if sendErr != nil {
+		_ = conn.Close()
 		return nil, sendErr
 	}
 
@@ -134,11 +170,11 @@ func SendFileRequest(to net.Addr, from net.Addr, path string) (*Message, error) 
 		return &message, recvErr
 	}
 
-	closeErr := conn.Close()
-
-	if closeErr != nil {
-		log.Warn("error closing connection: %s", closeErr)
+	if message.Code != ShareFileDataResponse {
+		log.Error("got unexpected response, expected ShareFileDataResponse, got code: %d", message.Code)
 	}
+
+	_ = conn.Close()
 
 	return &message, nil
 }

@@ -43,6 +43,6 @@ func SaveFile(content []byte, filename string, fileType string, fileDataStore *f
 		log.Info("successfully saved file: %s", filename)
 	}
 
-	metadata := fileData.CreateFileData(filename, fullSaveLocation, fileType)
+	metadata := fileData.CreateFileData(filename, fullSaveLocation, fileType, true)
 	fileDataStore.StoreFileData(metadata)
 }

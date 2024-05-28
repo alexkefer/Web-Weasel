@@ -1,6 +1,8 @@
 package p2pNetwork
 
 import (
+	"bytes"
+	"encoding/gob"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/log"
 	"net"
@@ -111,6 +113,24 @@ func HandleConnection(myAddr net.Addr, conn net.Conn, peerMap *PeerMap, files *f
 
 		if sendErr != nil {
 			log.Warn("send message error: %s", sendErr)
+		}
+
+	case ShareFileDataRequest:
+		var dataBuffer bytes.Buffer
+		encoder := gob.NewEncoder(&dataBuffer)
+		files.Mutex.RLock()
+		encodeErr := encoder.Encode(files.LocalFiles)
+		files.Mutex.RUnlock()
+		if encodeErr != nil {
+			log.Error("could not encode for ShareFileDataResponse: %s", encodeErr)
+		} else {
+			data := dataBuffer.Bytes()
+			response := Message{Code: ShareFileDataResponse, SenderAddr: myAddr.String(), Data: data}
+			sendErr := SendMessage(conn, response)
+
+			if sendErr != nil {
+				log.Warn("send message error: %s", sendErr)
+			}
 		}
 
 	default:

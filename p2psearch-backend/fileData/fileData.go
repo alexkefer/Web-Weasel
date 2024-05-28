@@ -28,7 +28,7 @@ type FileData struct {
 
 // CreateFileData creates a new FileData struct from the provided arguments. It initializes the FileData.DownloadTime
 // and FileData.AccessTime fields to the current time.
-func CreateFileData(url string, fileLoc string, fileType string) FileData {
+func CreateFileData(url string, fileLoc string, fileType string, local bool) FileData {
 	return FileData{
 		Url:          url,
 		FileLoc:      fileLoc,
@@ -40,15 +40,15 @@ func CreateFileData(url string, fileLoc string, fileType string) FileData {
 
 // FileDataStore holds a map which holds FileData structs for every cached resource.
 type FileDataStore struct {
-	Mutex sync.RWMutex
-	Data  map[string]FileData
+	Mutex      sync.RWMutex
+	LocalFiles map[string]FileData
 }
 
 // CreateFileDataStore initializes a new FileDataStore struct.
 func CreateFileDataStore() FileDataStore {
 	return FileDataStore{
-		Mutex: sync.RWMutex{},
-		Data:  make(map[string]FileData),
+		Mutex:      sync.RWMutex{},
+		LocalFiles: make(map[string]FileData),
 	}
 }
 
@@ -56,7 +56,7 @@ func CreateFileDataStore() FileDataStore {
 // corresponding to path.
 func (store *FileDataStore) HasFileStored(path string) bool {
 	store.Mutex.RLock()
-	_, hasFile := store.Data[path]
+	_, hasFile := store.LocalFiles[path]
 	store.Mutex.RUnlock()
 	return hasFile
 }
@@ -65,7 +65,7 @@ func (store *FileDataStore) HasFileStored(path string) bool {
 // FileDataStore struct.
 func (store *FileDataStore) RetrieveFileData(path string) FileData {
 	store.Mutex.RLock()
-	fileData, _ := store.Data[path]
+	fileData, _ := store.LocalFiles[path]
 	store.Mutex.RUnlock()
 	return fileData
 }
@@ -73,7 +73,7 @@ func (store *FileDataStore) RetrieveFileData(path string) FileData {
 // StoreFileData stores a FileData struct in the FileDataStore, using the FileData.Url field as the key.
 func (store *FileDataStore) StoreFileData(fileData FileData) {
 	store.Mutex.Lock()
-	store.Data[fileData.Url] = fileData
+	store.LocalFiles[fileData.Url] = fileData
 	store.Mutex.Unlock()
 }
 
@@ -92,9 +92,9 @@ func (store *FileDataStore) SaveFileDataStore() {
 
 		if fileErr == nil {
 			encoder := json.NewEncoder(file)
-			encodeErr := encoder.Encode(store.Data)
+			encodeErr := encoder.Encode(store.LocalFiles)
 			if encodeErr != nil {
-				log.Error("problem encoding Data store to metadata file: %s", encodeErr)
+				log.Error("problem encoding LocalFiles store to metadata file: %s", encodeErr)
 			}
 			closeErr := file.Close()
 			if closeErr != nil {
@@ -109,7 +109,7 @@ func (store *FileDataStore) SaveFileDataStore() {
 }
 
 // LoadFileData loads resource metadata from the JSON file in the cache directory if it exists into the FileDataStore.
-// This function overwrites any Data that is already in the FileDataStore.
+// This function overwrites any LocalFiles that is already in the FileDataStore.
 func (store *FileDataStore) LoadFileData() {
 	store.Mutex.Lock()
 
@@ -124,7 +124,7 @@ func (store *FileDataStore) LoadFileData() {
 
 		if fileErr == nil {
 			decoder := json.NewDecoder(file)
-			decodeErr := decoder.Decode(&store.Data)
+			decodeErr := decoder.Decode(&store.LocalFiles)
 			if decodeErr != nil {
 				log.Warn("problem decoding metadata file: %s", decodeErr)
 			}
