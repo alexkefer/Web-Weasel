@@ -1,6 +1,8 @@
 package httpServer
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/alexkefer/p2psearch-backend/fileData"
 	"github.com/alexkefer/p2psearch-backend/fileTypes"
@@ -198,20 +200,69 @@ func hostnameHandler(w http.ResponseWriter) {
 
 func resourcesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
 	store.Mutex.RLock()
-	for _, data := range store.Data {
+	for _, data := range store.LocalFiles {
 		fmt.Fprintf(w, "%s\n", data.Url)
 	}
 	store.Mutex.RUnlock()
 }
 
-func sitesHandler(w http.ResponseWriter, store *fileData.FileDataStore) {
+func sitesHandler(w http.ResponseWriter, store *fileData.FileDataStore, peerMap *p2pNetwork.PeerMap, myAddr net.Addr) {
+	// Ask other hosts for their file data maps.
+	channel := make(chan *p2pNetwork.Message)
+	counter := 0
+	peerMap.Mutex.RLock()
+	for key, peer := range peerMap.Peers {
+		if peer.Addr != myAddr {
+			counter += 1
+			go func() {
+				log.Debug("asking %s for filedata", key)
+				message, reqErr := p2pNetwork.SendShareFileDataRequest(peer.Addr, myAddr)
+				if reqErr == nil {
+					channel <- message
+				} else {
+					channel <- nil
+				}
+			}()
+		}
+	}
+	peerMap.Mutex.RUnlock()
+
+	printedSet := make(map[string]bool)
+
 	store.Mutex.RLock()
-	for _, data := range store.Data {
+	for key, data := range store.LocalFiles {
 		if data.FileType == fileTypes.Html {
 			fmt.Fprintf(w, "%s\n", data.Url)
+			printedSet[key] = true
 		}
 	}
 	store.Mutex.RUnlock()
+
+	for i := 0; i < counter; i++ {
+		message := <-channel
+		if message != nil {
+			log.Debug("got %d response from %s", message.Code, message.SenderAddr)
+
+			if message.Code == p2pNetwork.ShareFileDataResponse {
+				reader := bytes.NewReader(message.Data)
+				decoder := gob.NewDecoder(reader)
+				nonLocalFiles := make(map[string]fileData.FileData)
+				decodeErr := decoder.Decode(&nonLocalFiles)
+
+				if decodeErr != nil {
+					log.Error("error decoding non-local file data: %s", decodeErr)
+				} else {
+					for key, data := range nonLocalFiles {
+						_, printed := printedSet[key]
+						if data.FileType == fileTypes.Html && !printed {
+							fmt.Fprintf(w, "%s\n", data.Url)
+							printedSet[key] = true
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 func removeSiteHandler(w http.ResponseWriter, r *http.Request, store *fileData.FileDataStore) {
@@ -230,8 +281,8 @@ func removeSiteHandler(w http.ResponseWriter, r *http.Request, store *fileData.F
 	defer store.Mutex.Unlock()
 
 	// Remove the specified URL from the map
-	if _, exists := store.Data[urlToRemove]; exists {
-		delete(store.Data, urlToRemove)
+	if _, exists := store.LocalFiles[urlToRemove]; exists {
+		delete(store.LocalFiles, urlToRemove)
 		fmt.Fprintf(w, "Removed site: %s", urlToRemove)
 		log.Info("removed site: %s", urlToRemove)
 		return
@@ -242,7 +293,6 @@ func removeSiteHandler(w http.ResponseWriter, r *http.Request, store *fileData.F
 	fmt.Fprintf(w, "Site not found: %s", urlToRemove)
 	log.Warn("site not found: %s", urlToRemove)
 }
-
 
 func getPathParam(fromUrl *url.URL) (string, error) {
 	params, err := url.ParseQuery(fromUrl.RawQuery)

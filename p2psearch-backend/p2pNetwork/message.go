@@ -32,6 +32,8 @@ const (
 	FileRequest
 	HasFileResponse
 	NoFileResponse
+	ShareFileDataRequest
+	ShareFileDataResponse
 )
 
 // ReceiveMessage decodes a Message struct from an io.Reader, encoded using the "encoding/gob" module.
