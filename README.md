@@ -8,14 +8,12 @@ The P2P Web Cache project aims to create a decentralized web caching system wher
 
 Sure, here's how you can specify the installation instructions for Go and npm in your README:
 
-```markdown
 ## Dependencies
 
 Before running the program, make sure you have the following dependencies installed:
 
 Certainly! Here's the updated section with the note specifying the working versions:
 
-```markdown
 ## Dependencies
 
 Before running the program, make sure you have the following dependencies installed:
