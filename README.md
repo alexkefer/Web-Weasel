@@ -42,9 +42,8 @@ To install Node.js and npm, follow these steps:
    If installed correctly, these commands should display the installed Node.js and npm versions respectively.
    
    **Note:** A working version for the project is Node.js v21.7.3 and npm 10.5.0.
-```
 
-## Getting Started
+## Setting up the environment
 
 To run the program, use the following command:
 
