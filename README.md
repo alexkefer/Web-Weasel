@@ -45,18 +45,43 @@ To install Node.js and npm, follow these steps:
 
 ## Setting up the environment
 
-To run the program, use the following command:
+### Back-End Server 
+
+Firstly navigate to the backend server, use the following command:
+#### For Window
+```sh
+cd .\p2psearch-backend        
+```
+#### For Linux
+```sh
+cd p2psearch-backend      
+```
+To run the back-end, use the following command:
 
 ```sh
 go run .
 ```
 
-To connect to another instance, use the following command:
+### Front-end Extension 
 
+Firstly navigate to the frontend server, use the following command:
+#### For Window
 ```sh
-go run . --connect <ip addr>:<port>
+cd .\p2psearch-frontend-vreact       
+```
+#### For Linux
+```sh
+cd p2psearch-frontend-vreact     
+```
+To set up the enviroment for frontend development, use the following command:
+```sh
+npm install
 ```
 
+To construct the front-end, use the following command:
+```sh
+npm run build
+```
 ## Features
 
 - **Peer Discovery:** Automatically discover and store a list of available hosts in the network.
@@ -93,11 +118,12 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 For any questions or suggestions, please contact us at:
 2023-2024 Group
-- Alex Kefer: [email](mailto:alex.kefer@example.com)
-- Keagan Edwards: [email](mailto:keaganmedwards@gmail.com)
-- Ryan Martin: [email](mailto:ryan.business.work@gmail.com)
-- Khang Tran: [email](mailto:khangnguyentran.it@gmail.com)
+- Alex Kefer: [alex.kefer@example.com](mailto:alex.kefer@example.com)
+- Keagan Edwards: [keaganmedwards@gmail.com](mailto:keaganmedwards@gmail.com)
+- Ryan Martin: [ryan.business.work@gmail.com](mailto:ryan.business.work@gmail.com)
+- Khang Tran: [khangnguyentran.it@gmail.com](mailto:khangnguyentran.it@gmail.com)
 
 Thank you for checking out the P2P Web Cache project! We look forward to your feedback and contributions.
+
 
 ---
