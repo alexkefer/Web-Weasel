@@ -93,12 +93,12 @@ npm run build
 
 ## To Do
 
-- [ ] **Build functionality to download webpages:** Implement the ability to download and cache static webpages.
-- [ ] **Design frontend interface:** Create a user-friendly frontend to manage the P2P web cache.
-- [ ] **Disconnect Functionality:** Develop the ability to disconnect from other peers.
+- [x] **Build functionality to download webpages:** Implement the ability to download and cache static webpages.
+- [x] **Design frontend interface:** Create a user-friendly frontend to manage the P2P web cache.
+- [x] **Disconnect Functionality:** Develop the ability to disconnect from other peers.
 - [x] **Store List of available hosts:** Implemented the functionality to keep track of available peers in the network.
-- [ ] **Store List of websites downloaded on the available host:** Develop the functionality to store and share the list of cached websites on each peer.
-- [ ] **Request Website functionality:** Implement the ability to request specific webpages from other peers.
+- [x] **Store List of websites downloaded on the available host:** Develop the functionality to store and share the list of cached websites on each peer.
+- [x] **Request Website functionality:** Implement the ability to request specific webpages from other peers.
 
 ## Contribution
 
