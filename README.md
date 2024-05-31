@@ -12,12 +12,6 @@ Sure, here's how you can specify the installation instructions for Go and npm in
 
 Before running the program, make sure you have the following dependencies installed:
 
-Certainly! Here's the updated section with the note specifying the working versions:
-
-## Dependencies
-
-Before running the program, make sure you have the following dependencies installed:
-
 ### Go
 
 To install Go, follow these steps:
