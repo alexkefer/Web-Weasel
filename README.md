@@ -118,7 +118,7 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 For any questions or suggestions, please contact us at:
 2023-2024 Group
-- Alex Kefer: [alex.kefer@example.com](mailto:alex.kefer@example.com)
+- Alex Kefer: [alexkefer@icloud.com](mailto:alexkefer@icloud.com)
 - Keagan Edwards: [keaganmedwards@gmail.com](mailto:keaganmedwards@gmail.com)
 - Ryan Martin: [ryan.business.work@gmail.com](mailto:ryan.business.work@gmail.com)
 - Khang Tran: [khangnguyentran.it@gmail.com](mailto:khangnguyentran.it@gmail.com)
