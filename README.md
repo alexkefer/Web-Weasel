@@ -46,39 +46,51 @@ To install Node.js and npm, follow these steps:
 ## Setting up the environment
 
 ### Back-End Server 
-
+#### Navigate to folder
 Firstly navigate to the backend server, use the following command:
-#### For Window
+##### For Window
 ```sh
 cd .\p2psearch-backend        
 ```
-#### For Linux
+##### For Linux
 ```sh
 cd p2psearch-backend      
 ```
+#### Start the Back-end
 To run the back-end, use the following command:
 
+##### For Development
 ```sh
 go run .
 ```
-
+##### For Deployment 
+```sh
+go build
+```
 ### Front-end Extension 
-
+#### Navigate to folder
 Firstly navigate to the frontend server, use the following command:
-#### For Window
+##### For Window
 ```sh
 cd .\p2psearch-frontend-vreact       
 ```
-#### For Linux
+##### For Linux
 ```sh
 cd p2psearch-frontend-vreact     
 ```
-To set up the enviroment for frontend development, use the following command:
+#### Download the necessary npm packages
+To set up the environment for frontend development, use the following command:
 ```sh
 npm install
 ```
-
+#### Start the Front-end 
 To construct the front-end, use the following command:
+##### For Development
+```sh
+npm run dev
+```
+
+##### For Deployment
 ```sh
 npm run build
 ```
