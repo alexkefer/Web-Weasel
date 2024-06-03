@@ -12,6 +12,7 @@ Sure, here's how you can specify the installation instructions for Go and npm in
 
 Download the [latest release](https://https://github.com/alexkefer/Web-Weasel/releases) from Github.
 Go to your extensions page and click `Load unpacked` and navigate to the `./p2p-frontend-vreact` then click `open folder`
+
 ![image](https://github.com/alexkefer/Web-Weasel/assets/86503164/a2cc8225-8438-4273-b3db-1d8360e1c84d)
 
 
