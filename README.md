@@ -10,7 +10,13 @@ Sure, here's how you can specify the installation instructions for Go and npm in
 
 ## Installing
 
-Download the [latest release](https://https://github.com/alexkefer/Web-Weasel/releases) from Github. Make sure to run the backend executable whenever you want to use the extension.
+Download the [latest release](https://https://github.com/alexkefer/Web-Weasel/releases) from Github.
+Go to your extensions page and click `Load unpacked` and navigate to the `./p2p-frontend-vreact` then click `open folder`
+Should you want to use the lite version, do the same but with `./p2p-frontend-lite` instead
+
+This will unpack the extension to your browser to be used.
+
+Make sure to run the backend executable whenever you want to use the extension.
 
 ## Development Dependencies
 
