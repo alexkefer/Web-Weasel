@@ -1,4 +1,4 @@
-/* Function and helpers to save pages to file at specified location*/
+/* Keagan Edwards & Alex Kefer - SaveFile function */
 
 package webDownloader
 
@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 )
 
+/*
+SaveFile saves the content of the file inside of a filename with its filetype at the fileDataStore location.
+The function creates its required folder and each page required to load the webpage.
+*/
 func SaveFile(content []byte, filename string, fileType string, fileDataStore *fileData.FileDataStore) {
 	saveLocation, err2 := utils.GetCachePath()
 	fullSaveLocation := filepath.Join(saveLocation, filename)

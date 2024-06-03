@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "P2P Web Cache Browser Extension",
+  "name": "P2P Web Cache",
   "version": "1.0",
-  "description": "P2P Web Cache Front End Extension",
+  "description": "A Chrome extension facilitating peer-to-peer file sharing",
   "permissions": [
     "activeTab",
     "http://localhost:8080/*"

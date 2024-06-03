@@ -1,6 +1,4 @@
-// Alex Kefer // January 2023 // Package to download webpages to be able to run them locally
-// Will include options for all pages or just the page itself and where to save it
-// Helper functions will assist in translating the html css and js files
+//  Keagan Edwards & Alex Kefer - January 2023 - Package to download webpages to be able to run them locally
 
 package webDownloader
 
@@ -15,6 +13,11 @@ import (
 	"strings"
 )
 
+/*
+CacheResource first uses download Resource to read the html page.
+Then uses the UrlToFilename function to build a directory for the files.
+Afterward it proceeds to sort by its content and download all assets including its base html file.
+*/
 func CacheResource(url string, fileDataStore *fileData.FileDataStore) error {
 	content, contentType, err := downloadResource(url)
 	if err != nil {
@@ -36,6 +39,7 @@ func CacheResource(url string, fileDataStore *fileData.FileDataStore) error {
 	return nil
 }
 
+// Download Resource reads the given webpage from the url string.
 func downloadResource(url string) ([]byte, string, error) {
 	resp, err := http.Get(url)
 	if err != nil {

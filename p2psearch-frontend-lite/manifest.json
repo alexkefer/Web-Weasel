@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "P2P Web Cache Lite",
+  "version": "1.0",
+  "description": "A Chrome extension facilitating peer-to-peer file sharing.",
+  "permissions": [
+    "activeTab",
+    "http://localhost:8080/*"
+  ],
+  "action": {
+    "default_icon": "images/folder-icon.png",
+    "default_popup": "HTML/popup.html"
+  },
+  "icons": {
+    "16": "images/folder-icon.png",
+    "48": "images/folder-icon.png",
+    "128": "images/folder-icon.png"
+  },
+  "background": {
+    "service_worker": "JS/background.js"
+  }
+}
