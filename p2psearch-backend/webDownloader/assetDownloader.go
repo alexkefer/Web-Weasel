@@ -1,4 +1,4 @@
-/* This is a helper utility built to regex through the html and modify the locations to where they are downloaded rather than their links */
+/* Keagan Edwards & Alex Kefer - This is a helper utility built to regex through the html and modify the locations to where they are downloaded rather than their links */
 
 package webDownloader
 
@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Sends a request to the URL in order to download the webpage.
 func retrieveAsset(url string) ([]byte, string) {
 	// takes in the url and returns the asset
 	req, _ := http.NewRequest("GET", url, nil)
@@ -35,6 +36,12 @@ func retrieveAsset(url string) ([]byte, string) {
 	return body, contentType
 }
 
+/*
+DownloadAllAssets tokenizes through the html content of the page
+and finds key content needed to properly display the web page.
+This can include CSS, JS and photos.
+This can greatly be expanded upon to better handle advanced websites.
+*/
 func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStore) string {
 	tokenizer := html.NewTokenizer(strings.NewReader(htmlContent))
 	modifiedHtml := ""
@@ -122,21 +129,7 @@ func DownloadAllAssets(url, htmlContent string, fileStore *fileData.FileDataStor
 
 /* Helper Functions */
 
-// using the url from the token, it will determine the asset type (css, php, js, img, etc)
-func detectAssetType(url string) string {
-	if strings.Contains(url, ".css") {
-		return "css"
-	} else if strings.Contains(url, ".js") {
-		return "js"
-	} else if strings.Contains(url, ".php") {
-		return "php"
-	} else if strings.Contains(url, ".jpg") || strings.Contains(url, ".jpeg") || strings.Contains(url, ".png") || strings.Contains(url, ".gif") || strings.Contains(url, ".svg") || strings.Contains(url, ".bmp") || strings.Contains(url, ".webp") || strings.Contains(url, ".ico") {
-		return "img"
-	} else {
-		return "unknown"
-	}
-}
-
+// Returns attribute value for a given key from an html token
 func getAttributeValue(token html.Token, key string) (string, bool) {
 	for _, attr := range token.Attr {
 		if attr.Key == key {
@@ -146,6 +139,7 @@ func getAttributeValue(token html.Token, key string) (string, bool) {
 	return "", false
 }
 
+// Shortens the URL by removing the prefix for ease of use in searching for a URL.
 func shortenUrl(fullUrl string) string {
 	cutUrl, cut := strings.CutPrefix(fullUrl, "https://")
 	if cut {
@@ -164,14 +158,4 @@ func shortenUrl(fullUrl string) string {
 	}
 
 	return fullUrl
-}
-
-func parsePageSource(url string) string {
-	// takes in the url and returns only the https://www.{url}
-	for i := 0; i < len(url); i++ {
-		if url[i] == '/' {
-			return "https://" + url[:i]
-		}
-	}
-	return "https://" + url
 }
