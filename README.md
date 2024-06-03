@@ -2,7 +2,7 @@
 
 ## Overview
 
-Welcome to the Web Weasel P2P Web Cache project! This project is developed by Alex Kefer, Keagan Edwards, Ryan Martin, and Khang Tran as part of our Senior Project at WWU. Originally built by Keagan Edwards and later modified by Alex Kefer, the current version of the project is 1.0.0.
+Welcome to the Web Weasel P2P Web Cache project! This project is developed by Alex Kefer, Keagan Edwards, Ryan Martin, and Khang Tran as part of our Senior Project at WWU. Originally built by Keagan Edwards and later modified by Alex Kefer, the current version of the project is 0.1.0.
 
 The P2P Web Cache project aims to create a decentralized web caching system where peers can share cached web pages, improving the efficiency and speed of web access.
 
