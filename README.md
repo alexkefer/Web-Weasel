@@ -8,19 +8,19 @@ The P2P Web Cache project aims to create a decentralized web caching system wher
 
 Sure, here's how you can specify the installation instructions for Go and npm in your README:
 
-## Installing
+## Installing The Frontend Browser Extension 
 
 Download the [latest release](https://https://github.com/alexkefer/Web-Weasel/releases) from Github.
-Go to your extensions page and click `Load unpacked` and navigate to the `./frontend` then click `open folder`.
+Go to your extensions page, click `Load unpacked, ' navigate to the `./frontend,` then click `open folder`.
 
 ![image](https://github.com/alexkefer/Web-Weasel/assets/86503164/a2cc8225-8438-4273-b3db-1d8360e1c84d)
 
 
-Should you want to use the lite version, do the same but with `./p2p-frontend-lite` instead.
+If you want to use the lite version, do the same with `./p2p-frontend-lite` instead.
 
 This will unpack the extension to your browser to be used.
 
-Make sure to run the backend executable whenever you want to use the extension.
+Run the backend executable whenever you want to use the extension.
 
 [For more info on unpacking extensions.](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked)
 
@@ -55,7 +55,7 @@ To install Node.js and npm, follow these steps:
    ```sh
    npm --version
    ```
-   If installed correctly, these commands should display the installed Node.js and npm versions respectively.
+   These commands should display the installed Node.js and npm versions if installed correctly.
    
    **Note:** A working version for the project is Node.js v21.7.3 and npm 10.5.0.
 
