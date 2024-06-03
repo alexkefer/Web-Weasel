@@ -18,12 +18,16 @@ func main() {
 	var connect string
 	var p2pPort string
 	var httpPort string
+	var logName string
 
 	flag.StringVar(&connect, "connect", "", "Peer IP address the backend should connect to initially")
 	flag.StringVar(&p2pPort, "p2p-port", "", "Port the p2p server should use")
 	flag.StringVar(&httpPort, "http-port", "", "Port the http server should use")
+	flag.StringVar(&logName, "name", "", "Process name used for log output")
 
 	flag.Parse()
+
+	log.SetName(logName)
 
 	if p2pPort == "" {
 		var portErr error
@@ -50,7 +54,7 @@ func main() {
 
 	fileDataStore := fileData.CreateFileDataStore()
 	fileDataStore.LoadFileData()
-	
+
 	go p2pNetwork.StartServer(myP2PAddr, &peerMap, &fileDataStore)
 	log.Info("my p2p server address: %s", myP2PAddr)
 

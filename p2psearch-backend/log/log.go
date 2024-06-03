@@ -18,6 +18,8 @@ const (
 	levelError
 )
 
+var logName string = ""
+
 // Debug logs a message at the debug level. Should be used for spamy log messages. Can be formatted like printf.
 func Debug(format string, a ...any) { logAtLevel(levelDebug, format, a...) }
 
@@ -32,6 +34,10 @@ func Warn(format string, a ...any) { logAtLevel(levelWarn, format, a...) }
 // Error logs a message at the error level. Should be used to indicate that something unexpected happened that should
 // probably be addressed. Can be formatted like printf.
 func Error(format string, a ...any) { logAtLevel(levelError, format, a...) }
+
+func SetName(name string) {
+	logName = name
+}
 
 func logAtLevel(level int, format string, a ...any) {
 	now := time.Now()
@@ -49,7 +55,12 @@ func logAtLevel(level int, format string, a ...any) {
 	default:
 	}
 
-	fmt.Printf("%s[%s] ", levelStr, now.Format(time.RFC3339))
+	fmt.Printf("%s[%s]", levelStr, now.Format(time.RFC3339))
+	if logName == "" {
+		fmt.Printf(" ")
+	} else {
+		fmt.Printf("(%s) ", logName)
+	}
 	fmt.Printf(format, a...)
 	fmt.Printf("\n")
 }

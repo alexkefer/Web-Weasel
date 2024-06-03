@@ -1,6 +1,6 @@
 // Package fileData is responsible for tracking cached resources in memory during runtime.
 //
-// Every cached resource should hava a corresponding FileData struct, stored in a FileDataStore struct.
+// Every cached resource should have a corresponding FileData struct, stored in a FileDataStore struct.
 package fileData
 
 import (
