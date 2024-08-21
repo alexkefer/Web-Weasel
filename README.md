@@ -1,4 +1,4 @@
-# P2P Web Cache
+# Web Weasel - P2P Web Cache
 
 ## Overview
 
